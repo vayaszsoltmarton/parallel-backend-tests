@@ -65,11 +65,11 @@ jobs:
                 | sed 's|parallel-backend-tests/core/src/test/java/||g' \  # Strip the base folder
                 | sed 's|/|.|g' \  # Replace / with . to form the package structure
                 | sed 's|.java||g' \  # Remove .java file extension
-                | sed 's|^|--tests "|g') \  # Add --tests " at the start of each line
+                | sed 's|^|--tests "|g')  # Add --tests " at the start of each line
 
           echo "Running tests: ${TEST_CLASSES}"
 
           # Run Gradle with fully qualified test class names
           cd parallel-backend-tests/core
           chmod +x ./gradlew
-          ./gradlew test --tests "${TEST_CLASSES}" --warning-mode all --stacktrace
+          ./gradlew test "${TEST_CLASSES}" --warning-mode all --stacktrace
