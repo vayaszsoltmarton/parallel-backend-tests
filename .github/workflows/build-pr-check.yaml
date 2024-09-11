@@ -58,6 +58,6 @@ jobs:
 
       - name: Run tests
         run: |
-          cd parallel-backend-tests
-          chmod +x /gradlew
-          /gradlew test --tests "${{ steps.split-tests.outputs.test-suite }}"
+          cd parallel-backend-tests/core
+          chmod +x ../gradlew
+          ../gradlew test --tests "${{ steps.split-tests.outputs.test-suite }}"
