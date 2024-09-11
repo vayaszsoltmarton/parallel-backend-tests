@@ -1,0 +1,16 @@
+.idea
+!.idea/
+.idea/*
+!.idea/codeStyles/
+
+.gradle/
+build/
+.settings/
+.classpath
+.project
+*.iml
+.DS_Store
+/jira-kanban-export.zip
+/lombok.jar
+camunda-h2-database*
+zg-library-shared/out/
