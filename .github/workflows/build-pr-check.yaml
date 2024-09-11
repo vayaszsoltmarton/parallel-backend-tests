@@ -69,4 +69,5 @@ jobs:
           echo "Running tests: ${TEST_CLASSES}"
 
           # Run Gradle with fully qualified test class names
+          cd parallel-backend-tests/core
           ./gradlew test --tests "${TEST_CLASSES}" --warning-mode all
