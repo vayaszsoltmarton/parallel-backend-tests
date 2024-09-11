@@ -37,14 +37,6 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-logging"
 }
 
-sourceSets {
-    test {
-        java {
-            srcDirs = ['parallel-backend-tests/core/src/test/java']
-        }
-    }
-}
-
 tasks.test {
     useJUnitPlatform()
 }
