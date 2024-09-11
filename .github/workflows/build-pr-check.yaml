@@ -4,12 +4,33 @@ on:
   pull_request:
     branches: [master, major*, minor*]
     types: [opened, reopened, synchronize, edited]
+env:
+  total-runners: 5    
 
 
 
 jobs:
-  build:
+  runner-indexes:
     runs-on: ubuntu-latest
+    name: Generate runner indexes
+    outputs:
+      json: ${{ steps.generate-index-list.outputs.json }}
+    steps:
+      - id: generate-index-list
+        run: |
+          MAX_INDEX=$((${{ env.total-runners }}-1))
+          INDEX_LIST=$(seq 0 ${MAX_INDEX})
+          INDEX_JSON=$(jq --null-input --compact-output '. |= [inputs]' <<< ${INDEX_LIST})
+          echo "::set-output name=json::${INDEX_JSON}"
+          
+  run-parallel-tests:
+    runs-on: ubuntu-latest
+    name: "Runner #${{ matrix.runner-index }}: Run test suite in parallel"
+    needs:
+      - runner-indexes
+    strategy:
+      matrix:
+        runner-index: ${{ fromjson(needs.runner-indexes.outputs.json) }}  
     steps:
       - name: Set Berlin Timezone
         uses: szenius/set-timezone@v1.2
@@ -27,8 +48,18 @@ jobs:
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
 
-      - name: Run build with Gradle Wrapper
+      - uses: chaosaffe/split-tests@v1-alpha.1
+        id: split-tests
+        name: Split tests
+        with:
+          glob: parallel-backend-tests/core/**/*Test.java
+          split-total: ${{ env.total-runners }}
+          split-index: ${{ matrix.runner-index }}
+
+      - name: Run tests
         run: |
-          cd core
+          # Run only the tests assigned to this runner
+          echo "Running tests: ${{ steps.split-tests.outputs.test-suite }}"
+          cd parallel-backend-tests/core
           chmod +x ../gradlew
-          ../gradlew build
+          ../gradlew test --tests "${{ steps.split-tests.outputs.test-suite }}"
