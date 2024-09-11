@@ -58,19 +58,27 @@ jobs:
 
       - name: Run tests
         run: |
-          echo "Original file paths: ${{ steps.split-tests.outputs.test-suite }}"
-    
-          # Convert file paths to fully qualified class names
-          TEST_CLASSES=$(echo "${{ steps.split-tests.outputs.test-suite }}" \
-                | sed 's|parallel-backend-tests/core/src/test/java/||g' \  # Strip the base folder
-                sed 's|/|.|g' | \  # Replace / with .
-                sed 's|.java||g' | \  # Remove .java extension
-                sed 's|^|--tests "|g' | \  # Add --tests " at the start
-                sed 's|$|.*"|g')  # Add .*" at the end
+              # Store original paths in a variable
+              ORIGINAL_PATHS="${{ steps.split-tests.outputs.test-suite }}"
 
-          echo "Running tests: ${TEST_CLASSES}"
+              if [ -z "$ORIGINAL_PATHS" ]; then
+                echo "No tests found to run."
+                exit 1
+              fi
 
-          # Run Gradle with fully qualified test class names
-          cd parallel-backend-tests/core
-          chmod +x ./gradlew
-          ./gradlew test "${TEST_CLASSES}" --warning-mode all --stacktrace
+              echo "Original file paths: $ORIGINAL_PATHS"
+
+              # Convert file paths to the desired format using sed
+              TEST_CLASSES=$(echo "$ORIGINAL_PATHS" | \
+              sed 's|parallel-backend-tests/core/src/test/java/||g' | \  # Remove base directory
+              sed 's|/|.|g' | \  # Replace / with .
+              sed 's|.java||g' | \  # Remove .java extension
+              sed 's|^|--tests "|g' | \  # Add --tests " at the start
+              sed 's|$|.*"|g')  # Add .*" at the end
+
+              echo "Formatted test classes: ${TEST_CLASSES}"
+
+              # Run Gradle with fully qualified test class names
+              cd parallel-backend-tests/core
+              chmod +x ./gradlew
+              ./gradlew test $TEST_CLASSES --warning-mode all --stacktrace
