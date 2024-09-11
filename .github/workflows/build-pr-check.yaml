@@ -29,6 +29,6 @@ jobs:
 
       - name: Run build with Gradle Wrapper
         run: |
-          cd core
+          cd parallel-backend-tests/core
           chmod +x ../gradlew
           ../gradlew build
