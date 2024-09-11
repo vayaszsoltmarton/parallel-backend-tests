@@ -58,8 +58,6 @@ jobs:
 
       - name: Run tests
         run: |
-          # Run only the tests assigned to this runner
-          echo "Running tests: ${{ steps.split-tests.outputs.test-suite }}"
           cd parallel-backend-tests/core
           chmod +x ../gradlew
           ../gradlew test --tests "${{ steps.split-tests.outputs.test-suite }}"
