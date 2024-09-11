@@ -58,6 +58,11 @@ jobs:
 
       - name: Run tests
         run: |
+          echo "Original file paths: ${{ steps.split-tests.outputs.test-suite }}"
+          # Convert file paths to fully qualified class names
+          TEST_CLASSES=$(echo "${{ steps.split-tests.outputs.test-suite }}" | sed 's|src/test/java/||g' | sed 's|/|.|g' | sed 's|.java||g')
+
+          echo "Running tests: ${TEST_CLASSES}"
           cd parallel-backend-tests/core
           chmod +x ../gradlew
-          ../gradlew test --tests "${{ steps.split-tests.outputs.test-suite }}"
+          ../gradlew test --tests "${TEST_CLASSES}"
