@@ -1,0 +1,48 @@
+plugins {
+
+}
+
+plugins {
+    id 'io.franzbecker.gradle-lombok' version '5.0.0' // *MUST* come before 'java'
+    id 'java'
+    id 'idea'
+    id 'org.springframework.boot' version "${springBootVersion}"
+    id 'org.liquibase.gradle' version '2.2.0'
+    id 'io.spring.dependency-management' version '1.0.6.RELEASE'
+}
+
+group = "org.example"
+
+repositories {
+    mavenCentral()
+}
+
+jar {
+    enabled = false
+}
+
+// build for Java 17
+sourceCompatibility = 17
+targetCompatibility = 17
+
+lombok {
+    version = '1.18.32'
+    sha256 = "" // skip verifyLombok task
+}
+
+dependencies {
+    testImplementation(platform("org.junit:junit-bom:5.10.0"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    // logging: Logback
+    implementation "org.springframework.boot:spring-boot-starter-logging"
+}
+
+tasks.test {
+    useJUnitPlatform()
+}
+
+test {
+    testLogging {
+        exceptionFormat = 'full'
+    }
+}
