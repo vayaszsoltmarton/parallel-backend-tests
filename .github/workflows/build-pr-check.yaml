@@ -62,9 +62,7 @@ jobs:
     
           # Convert file paths to fully qualified class names
           TEST_CLASSES=$(echo "${{ steps.split-tests.outputs.test-suite }}" \
-          | sed 's|parallel-backend-tests/core/src/test/java/||g' \
-          | sed 's|/|.|g' \
-          | sed 's|.java||g')
+          | sed 's|parallel-backend-tests/core/src/test/java/||g'
 
           echo "Running tests: ${TEST_CLASSES}"
 
