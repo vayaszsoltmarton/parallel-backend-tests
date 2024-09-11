@@ -65,7 +65,8 @@ jobs:
                 | sed 's|parallel-backend-tests/core/src/test/java/||g' \  # Strip the base folder
                 | sed 's|/|.|g' \  # Replace / with . to form the package structure
                 | sed 's|.java||g' \  # Remove .java file extension
-                | sed 's|^|--tests "|g')  # Add --tests " at the start of each line
+                sed 's|^|--tests "|g' | \  # Add --tests " at the start
+                sed 's|$|.*"|g')  # Add .*" at the end
 
           echo "Running tests: ${TEST_CLASSES}"
 
