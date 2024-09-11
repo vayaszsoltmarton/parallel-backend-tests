@@ -63,8 +63,8 @@ jobs:
           # Convert file paths to fully qualified class names
           TEST_CLASSES=$(echo "${{ steps.split-tests.outputs.test-suite }}" \
                 | sed 's|parallel-backend-tests/core/src/test/java/||g' \  # Strip the base folder
-                | sed 's|/|.|g' \  # Replace / with . to form the package structure
-                | sed 's|.java||g' \  # Remove .java file extension
+                sed 's|/|.|g' | \  # Replace / with .
+                sed 's|.java||g' | \  # Remove .java extension
                 sed 's|^|--tests "|g' | \  # Add --tests " at the start
                 sed 's|$|.*"|g')  # Add .*" at the end
 
