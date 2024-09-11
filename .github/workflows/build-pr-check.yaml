@@ -71,12 +71,11 @@ jobs:
               # Convert file paths to the desired format using sed
               TEST_CLASSES=$(echo "$ORIGINAL_PATHS" | \
               tr ' ' '\n' | \  # Convert space-separated paths into newline-separated
-              sed 's|parallel-backend-tests/core/src/test/java/||g' | \  # Remove base directory
+              sed 's|parallel-backend-tests/core/src/test/java/||' | \  # Remove base directory
               sed 's|/|.|g' | \  # Replace / with .
               sed 's|.java||g' | \  # Remove .java extension
-              sed 's|^|--tests "|g' | \  # Add --tests " at the start
-              sed 's|$|.*"|g' | \  # Add .*" at the end
-              tr '\n' ' ')  # Convert back to space-separated list
+              sed 's|^|--tests "|' | \  # Add --tests " at the start
+              sed 's|$|.*"|g')  # Add .*" at the end
 
               echo "Formatted test classes: ${TEST_CLASSES}"
 
