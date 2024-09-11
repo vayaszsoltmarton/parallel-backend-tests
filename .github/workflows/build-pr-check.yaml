@@ -68,4 +68,4 @@ jobs:
           echo "Running tests: ${TEST_CLASSES}"
           cd parallel-backend-tests/core
           chmod +x ./gradlew
-          ./gradlew test --tests "${TEST_CLASSES}"
+          ./gradlew test --tests "${TEST_CLASSES}" --warning-mode all
