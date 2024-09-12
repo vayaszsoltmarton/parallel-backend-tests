@@ -72,11 +72,11 @@ jobs:
               TEST_CLASSES=$(echo "$ORIGINAL_PATHS" | \
               tr ' ' '\n' | \  # Convert space-separated paths to newline-separated
               sed 's|parallel-backend-tests/core/src/test/java/||' | \  # Remove base directory path
-              sed 's|/|.|g' | \  # Replace slashes with dots to match the class name structure
-              sed 's|.java$||' | \  # Remove the .java extension
-              sed 's|^|--tests "|' | \  # Add --tests " at the beginning of each line
-              sed 's|$|.*"|' | \  # Append .*" to the end of each line
-              tr '\n' ' ')  # Convert newline-separated entries back to space-separated
+              sed 's|/|.|g' | \  # Replace slashes with dots to match package name structure
+              sed 's|\.java$||' | \  # Remove .java extension
+              sed 's|^|--tests "|' | \  # Add --tests " at the start of each line
+              sed 's|$|.*"|' | \  # Append .*" at the end of each line
+              paste -sd ' ' -)  # Combine the lines back into a single space-separated string
 
               echo "Formatted test classes: ${TEST_CLASSES}"
 
