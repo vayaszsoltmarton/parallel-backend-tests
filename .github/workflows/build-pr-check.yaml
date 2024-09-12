@@ -69,14 +69,13 @@ jobs:
               echo "Original file paths: $ORIGINAL_PATHS"
 
               # Convert file paths to the desired format using a simpler method
-              TEST_CLASSES="--tests '.*("
+              # Convert file paths to the desired format using a simpler method
+              TEST_CLASSES=""
               for path in $ORIGINAL_PATHS; do
-                  # Convert file path to class name by replacing slashes with dots and stripping unwanted parts
-                  class_name=$(echo "$path" | sed 's|parallel-backend-tests/core/src/test/java/||; s|/|.|g; s|\.java$||')
-                  # Append the class name to the TEST_CLASSES string with a pipe (|)
-                  TEST_CLASSES+="$class_name|"
+                # Remove base directory path, replace slashes with dots, remove .java, format with --tests
+                class_name=$(echo "$path" | sed 's|parallel-backend-tests/core/src/test/java/||; s|/|.|g; s|\.java$||')
+                TEST_CLASSES="$TEST_CLASSES --tests \"$class_name\""
               done
-              TEST_CLASSES="${TEST_CLASSES::-1}).*'"
 
               # Ensure TEST_CLASSES is not empty after formatting
               if [ -z "$TEST_CLASSES" ]; then
