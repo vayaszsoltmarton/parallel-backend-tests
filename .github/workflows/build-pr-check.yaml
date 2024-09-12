@@ -69,18 +69,25 @@ jobs:
               echo "Original file paths: $ORIGINAL_PATHS"
 
               # Convert file paths to the desired format using sed
+              # Convert space-separated paths to formatted test class names
               TEST_CLASSES=$(echo "$ORIGINAL_PATHS" | \
-              tr ' ' '\n' | \  # Convert space-separated paths to newline-separated
-              sed 's|parallel-backend-tests/core/src/test/java/||' | \  # Remove base directory path
-              sed 's|/|.|g' | \  # Replace slashes with dots to match package name structure
-              sed 's|\.java$||' | \  # Remove .java extension
-              sed 's|^|--tests "|' | \  # Add --tests " at the start of each line
-              sed 's|$|.*"|' | \  # Append .*" at the end of each line
-              paste -sd ' ' -)  # Combine the lines back into a single space-separated string
+                tr ' ' '\n' | \  # Convert space-separated paths to newline-separated
+                sed 's|parallel-backend-tests/core/src/test/java/||' | \  # Remove base directory path
+                sed 's|/|.|g' | \  # Replace slashes with dots to match package name structure
+                sed 's|\.java$||' | \  # Remove .java extension at the end
+                sed 's|^|--tests "|' | \  # Add --tests " at the start of each line
+                sed 's|$|.*"|' | \  # Append .*" at the end of each line
+                paste -sd ' ')  # Join all lines into a single space-separated string
+
+              # Ensure TEST_CLASSES is not empty after formatting
+              if [ -z "$TEST_CLASSES" ]; then
+                echo "No test classes found after formatting!"
+                exit 1
+              fi
 
               echo "Formatted test classes: ${TEST_CLASSES}"
 
               # Run Gradle with fully qualified test class names
               cd parallel-backend-tests/core
               chmod +x ./gradlew
-              ./gradlew test ${TEST_CLASSES} --warning-mode all --stacktrace
+              ./gradlew test ${TEST_CLASSES} --warning-mode all 
