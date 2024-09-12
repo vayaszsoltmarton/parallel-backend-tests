@@ -88,8 +88,8 @@ jobs:
               echo "Command to execute: ./gradlew test ${TEST_CLASSES} --warning-mode all "
 
               # Run Gradle with fully qualified test class names
-              cd parallel-backend-tests/core
+              cd parallel-backend-tests
               chmod +x ./gradlew
-              #./gradlew test --tests 'org.parallel.big.BigExecution3Test' --warning-mode all
-              ./gradlew test --tests 'parallel-backend-tests/core/src/test/java/org/parallel/big/BigExecution3Test.java' --warning-mode all
+              ./gradlew core:test --tests 'org.parallel.big.BigExecution3Test' --warning-mode all
+              #./gradlew test --tests 'parallel-backend-tests/core/src/test/java/org/parallel/big/BigExecution3Test.java' --warning-mode all
               #./gradlew test ${TEST_CLASSES} --warning-mode all 
