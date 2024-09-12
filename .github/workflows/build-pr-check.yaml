@@ -93,3 +93,5 @@ jobs:
               #./gradlew core:test --tests 'org.parallel.big.BigExecution3Test' --warning-mode all
               #./gradlew core:test --tests 'org.parallel.big.BigExecution6Test' --tests 'org.parallel.huge.HugeExecution3Test' --warning-mode all
               ./gradlew core:test ${{TEST_CLASSES}} --warning-mode all 
+
+              
