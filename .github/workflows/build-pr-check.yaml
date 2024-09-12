@@ -94,4 +94,4 @@ jobs:
               chmod +x ./gradlew
               #./gradlew core:test --tests 'org.parallel.big.BigExecution3Test' --warning-mode all
               #./gradlew test --tests 'parallel-backend-tests/core/src/test/java/org/parallel/big/BigExecution3Test.java' --warning-mode all
-              ./gradlew core:test -${TEST_CLASSES} --warning-mode all 
+              ./gradlew core:test ${TEST_CLASSES} --warning-mode all 
