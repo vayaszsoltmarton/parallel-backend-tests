@@ -87,4 +87,4 @@ jobs:
               # Run Gradle with fully qualified test class names
               cd parallel-backend-tests/core
               chmod +x ./gradlew
-              ./gradlew test "${TEST_CLASSES}" --warning-mode all 
+              ./gradlew test ${TEST_CLASSES} --warning-mode all 
