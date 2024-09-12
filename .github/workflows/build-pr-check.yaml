@@ -70,11 +70,12 @@ jobs:
 
               # Convert file paths to the desired format using sed
               TEST_CLASSES=$(echo "$ORIGINAL_PATHS" | \
+                tr ' ' '\n' | \  # Convert space-separated paths to newline-separated
                 sed 's|parallel-backend-tests/core/src/test/java/||g' | \  # Remove base directory path
-                sed 's|/|.|g' | \  # Replace slashes with dots to match package name structure
-                sed 's|\.java$||g' | \  # Remove .java extension at the end
-                awk '{print "--tests \"" $0 ".*\""}' | \  # Format into --tests "test.package.Class.*"
-                paste -sd ' ')  # Join all lines into a single space-separated string
+                sed 's|/|.|g' | \  # Replace slashes with dots to match package structure
+                sed 's|\.java$||g' | \  # Remove .java extension
+                awk '{print "--tests \"" $0 ".*\""}' | \  # Format as --tests "test.package.Class.*"
+                paste -sd ' ')  # Join all lines into a space-separated string
 
               # Ensure TEST_CLASSES is not empty after formatting
               if [ -z "$TEST_CLASSES" ]; then
