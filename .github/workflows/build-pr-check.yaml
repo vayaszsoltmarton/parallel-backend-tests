@@ -70,12 +70,13 @@ jobs:
 
               # Convert file paths to the desired format using sed
               TEST_CLASSES=$(echo "$ORIGINAL_PATHS" | \
-              tr ' ' '\n' | \  # Convert space-separated paths into newline-separated
-              sed 's|parallel-backend-tests/core/src/test/java/||' | \  # Remove base directory
-              sed 's|/|.|g' | \  # Replace / with .
-              sed 's|.java||g' | \  # Remove .java extension
-              sed 's|^|--tests "|' | \  # Add --tests " at the start
-              sed 's|$|.*"|g')  # Add .*" at the end
+              tr ' ' '\n' | \  # Convert space-separated paths to newline-separated
+              sed 's|parallel-backend-tests/core/src/test/java/||' | \  # Remove base directory path
+              sed 's|/|.|g' | \  # Replace slashes with dots to match the class name structure
+              sed 's|.java$||' | \  # Remove the .java extension
+              sed 's|^|--tests "|' | \  # Add --tests " at the beginning of each line
+              sed 's|$|.*"|' | \  # Append .*" to the end of each line
+              tr '\n' ' ')  # Convert newline-separated entries back to space-separated
 
               echo "Formatted test classes: ${TEST_CLASSES}"
 
