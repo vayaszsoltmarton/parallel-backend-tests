@@ -119,11 +119,13 @@ jobs:
         source venv/bin/activate
         pip install junitparser
 
-    - name: Download Test Results
-      uses: actions/download-artifact@v3
-      with:
-        name: download-test-results
-        path: parallel-backend-tests/core/build/test-results/test
+    - name: Download Test Results from All Runners
+      run: |
+        for i in $(seq 0 $(( ${{ env.total-runners }} - 1 ))); do
+          echo "Downloading test results from runner $i"
+          mkdir -p parallel-backend-tests/core/build/test-results/test-$i
+          mv test-results-$i parallel-backend-tests/core/build/test-results/test-$i || echo "No results from runner $i"
+        done
 
     - name: Merge JUnit Test Reports
       run: |
