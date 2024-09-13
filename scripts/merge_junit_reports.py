@@ -14,4 +14,5 @@ for root, dirs, files in os.walk(test_report_dir):
             merged_report += xml
 
 # Save the merged report
+os.makedirs(output_dir, exist_ok=True)
 merged_report.write("unified-test-results/unified-report.xml")
