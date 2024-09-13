@@ -118,18 +118,12 @@ jobs:
         python -m venv venv
         source venv/bin/activate
         pip install junitparser
-
-    - name: Download Test Results for Runner 0
-      uses: actions/download-artifact@v4
-      with:
-        name: test-results-0
-        path: ./downloaded-test-results/runner-0
       
     - name: Download All Test Results
       uses: actions/download-artifact@v4
       with:
-        name: 'test-results-*' # Using a wildcard to download all artifacts that match the pattern
-        path: ./downloaded-artifacts
+        name: test-results-${{ matrix.runner-index }} # Using a wildcard to download all artifacts that match the pattern
+        path: ./downloaded-artifacts/runner-${{ matrix.runner-index }}
 
     - name: Merge JUnit Test Reports
       run: |
