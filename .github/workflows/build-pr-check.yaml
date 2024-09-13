@@ -104,26 +104,17 @@ jobs:
         with:
           name: test-results-${{ matrix.runner-index }}
           path: parallel-backend-tests/core/build/test-results/test
-          
-  download-artifacts:
-    runs-on: ubuntu-latest
-    name: "Runner #${{ matrix.runner-index }}: Run test suite in parallel"
-    needs:
-      - run-parallel-tests
-    strategy:
-      matrix:
-        runner-index: ${{ fromjson(needs.runner-indexes.outputs.json) }}
-    steps:
+
       - name: Download Test Results
         uses: actions/download-artifact@v4
         with:
           name: test-results-${{ matrix.runner-index }}  # Use matrix index to match artifact names
-          path: ./downloaded-test-results/runner-${{ matrix.runner-index }}
-          
+          path: ./downloaded-test-results/runner-${{ matrix.runner-index }}    
+    
   aggregate-results:
     runs-on: ubuntu-latest
     name: Aggregate test results and cache unified report
-    needs: download-artifacts
+    needs: run-parallel-tests
     steps:
     - name: Checkout project sources
       uses: actions/checkout@v3
