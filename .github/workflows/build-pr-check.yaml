@@ -124,14 +124,14 @@ jobs:
         for i in $(seq 0 $(( ${{ env.total-runners }} - 1 ))); do
           echo "Downloading test results from runner $i"
           mkdir -p parallel-backend-tests/core/build/test-results/test-$i
-          mv test-results-$i parallel-backend-tests/core/build/test-results/test-$i || echo "No results from runner $i"
+          mv test-results-$i/* parallel-backend-tests/core/build/test-results/test-$i/ || echo "No results from runner $i"
         done
 
     - name: Merge JUnit Test Reports
       run: |
         python -m venv venv
         source venv/bin/activate
-        python merge_junit_reports.py
+        python scripts/merge_junit_reports.py
           
       # - name: Cache Unified JUnit Test Reports
       #   uses: actions/cache@v3
