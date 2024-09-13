@@ -124,7 +124,7 @@ jobs:
         for i in $(seq 0 $(( ${{ env.total-runners }} - 1 ))); do
           echo "Downloading test results from runner $i"
           mkdir -p parallel-backend-tests/core/build/test-results/test-$i
-          mv test-results-$i/* parallel-backend-tests/core/build/test-results/test-$i/ || echo "No results from runner $i"
+          mv parallel-backend-tests/core/build/test-results/test/test-results-$i/* parallel-backend-tests/core/build/test-results/test-$i/ || echo "No results from runner $i"
         done
 
     - name: Merge JUnit Test Reports
