@@ -126,7 +126,7 @@ jobs:
         pip install junitparser
 
     - name: List Downloaded Test Results
-      run: ls -R ./downloaded-test-results
+      run: ls -R ../downloaded-test-results
 
     - name: Merge JUnit Test Reports
       run: |
