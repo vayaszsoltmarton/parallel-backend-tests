@@ -105,12 +105,6 @@ jobs:
           name: test-results-${{ matrix.runner-index }}
           path: parallel-backend-tests/build/test-results/test
 
-      - name: Download Test Results for Runner #${{ matrix.runner-index }}
-        uses: actions/download-artifact@v3
-        with:
-          name: test-results-${{ matrix.runner-index }}
-          path: test-results/
-
   aggregate-results:
     runs-on: ubuntu-latest
     name: Aggregate test results and cache unified report
@@ -125,7 +119,7 @@ jobs:
         if: success() || failure() # always run even if the previous step fails
         run: |
           mkdir -p unified-test-results
-          xunit-viewer -r test-results/ -o unified-test-results/unified-report.xml
+          xunit-viewer -r parallel-backend-tests/build/test-results/test/ -o unified-test-results/unified-report.xml
           
       - name: Publish Test Report
         uses: mikepenz/action-junit-report@v4
