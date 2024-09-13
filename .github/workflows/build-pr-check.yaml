@@ -119,13 +119,11 @@ jobs:
         source venv/bin/activate
         pip install junitparser
 
-    - name: Download Test Results from All Runners
-      run: |
-        for i in $(seq 0 $(( ${{ env.total-runners }} - 1 ))); do
-          echo "Downloading test results from runner $i"
-          mkdir -p parallel-backend-tests/core/build/test-results/test-$i
-          mv parallel-backend-tests/core/build/test-results/test/test-results-$i/* parallel-backend-tests/core/build/test-results/test-$i/ || echo "No results from runner $i"
-        done
+    - name: Download All Test Results
+      uses: actions/download-artifact@v3
+      with:
+        name: 'test-results-*' # Using a wildcard to download all artifacts that match the pattern
+        path: ./downloaded-artifacts
 
     - name: Merge JUnit Test Reports
       run: |
