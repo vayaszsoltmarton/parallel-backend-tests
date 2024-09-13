@@ -104,11 +104,26 @@ jobs:
         with:
           name: test-results-${{ matrix.runner-index }}
           path: parallel-backend-tests/core/build/test-results/test
-
+          
+  download-artifacts:
+    runs-on: ubuntu-latest
+    name: "Runner #${{ matrix.runner-index }}: Run test suite in parallel"
+    needs:
+      - run-parallel-tests
+    strategy:
+      matrix:
+        runner-index: ${{ fromjson(needs.runner-indexes.outputs.json) }}
+    steps:
+      - name: Download Test Results
+        uses: actions/download-artifact@v4
+        with:
+          name: test-results-${{ matrix.runner-index }}  # Use matrix index to match artifact names
+          path: ./downloaded-test-results/runner-${{ matrix.runner-index }}
+          
   aggregate-results:
     runs-on: ubuntu-latest
     name: Aggregate test results and cache unified report
-    needs: run-parallel-tests
+    needs: download-artifacts
     steps:
     - name: Checkout project sources
       uses: actions/checkout@v3
@@ -118,12 +133,6 @@ jobs:
         python -m venv venv
         source venv/bin/activate
         pip install junitparser
-      
-    - name: Download All Test Results
-      uses: actions/download-artifact@v4
-      with:
-        name: test-results-${{ matrix.runner-index }} # Using a wildcard to download all artifacts that match the pattern
-        path: ./downloaded-artifacts/runner-${{ matrix.runner-index }}
 
     - name: Merge JUnit Test Reports
       run: |
