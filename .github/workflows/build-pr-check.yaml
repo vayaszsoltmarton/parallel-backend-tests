@@ -130,7 +130,12 @@ jobs:
         python -m venv venv
         source venv/bin/activate
         python scripts/merge_junit_reports.py
-          
+        
+    - name: Upload Unified Test Results
+      uses: actions/upload-artifact@v4
+      with:
+        name: unified-test-results
+        path: unified-test-results/unified-report.xml      
       # - name: Cache Unified JUnit Test Reports
       #   uses: actions/cache@v3
       #   with:
