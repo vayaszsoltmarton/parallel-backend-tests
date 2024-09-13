@@ -87,6 +87,7 @@ jobs:
               echo "Formatted test classes: ${TEST_CLASSES}"
               echo "Command to execute: ./gradlew test ${TEST_CLASSES} --warning-mode all "
               echo "image=${TEST_CLASSES}" >> $GITHUB_ENV
+              echo "./gradlew core:test ${{env.image}} --warning-mode all "
 
               # Run Gradle with fully qualified test class names
               cd parallel-backend-tests
