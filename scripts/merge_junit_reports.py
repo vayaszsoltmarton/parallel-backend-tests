@@ -2,7 +2,7 @@ import os
 from junitparser import JUnitXml
 
 # Directory where test reports are stored
-test_report_dir = "parallel-backend-tests/core/build/test-results"
+test_report_dir = "downloaded-artifacts"
 merged_report = JUnitXml()
 
 # Loop through all XML files and merge them
@@ -14,5 +14,5 @@ for root, dirs, files in os.walk(test_report_dir):
             merged_report += xml
 
 # Save the merged report
-os.makedirs(output_dir, exist_ok=True)
+os.makedirs("unified-test-results", exist_ok=True)
 merged_report.write("unified-test-results/unified-report.xml")
