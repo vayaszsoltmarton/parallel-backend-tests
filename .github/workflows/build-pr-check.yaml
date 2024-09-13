@@ -103,7 +103,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: test-results-${{ matrix.runner-index }}
-          path: parallel-backend-tests/build/test-results/test
+          path: parallel-backend-tests/core/build/test-results/test
 
   aggregate-results:
     runs-on: ubuntu-latest
