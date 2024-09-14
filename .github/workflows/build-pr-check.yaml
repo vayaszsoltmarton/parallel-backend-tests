@@ -110,11 +110,6 @@ jobs:
       #   with:
       #     name: test-results-${{ matrix.runner-index }}  # Use matrix index to match artifact names
       #     path: ./downloaded-test-results/runner-${{ matrix.runner-index }}
-      - name: Download Test Results
-        uses: actions/download-artifact@v4
-        with:
-          name: test-results-${{ matrix.runner-index }}  # Ensure the name matches
-          path: ./downloaded-test-results     
     
   aggregate-results:
     runs-on: ubuntu-latest
@@ -123,6 +118,12 @@ jobs:
     steps:
     - name: Checkout project sources
       uses: actions/checkout@v3
+
+    - name: Download Test Results
+      uses: actions/download-artifact@v4
+      with:
+        name: test-results-${{ matrix.runner-index }}  # Ensure the name matches
+        path: ./downloaded-test-results       
 
     - name: Install Python dependencies
       run: |
