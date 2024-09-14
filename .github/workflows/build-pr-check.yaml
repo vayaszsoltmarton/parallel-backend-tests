@@ -119,11 +119,12 @@ jobs:
     - name: Checkout project sources
       uses: actions/checkout@v3
 
-    - name: Download Test Results
-      uses: actions/download-artifact@v4
-      with:
-        name: test-results-${{ matrix.runner-index }}  # Ensure the name matches
-        path: ./downloaded-test-results       
+    - name: Download Test Results for All Runners
+      run: |
+        for i in $(seq 0 $(( env.total-runners - 1 ))); do
+          echo "Downloading test results for runner $i"
+          gh run download --artifact "test-results-${i}" --dir "./downloaded-test-results/runner-${i}" || echo "Runner $i had no results"
+        done      
 
     - name: Install Python dependencies
       run: |
