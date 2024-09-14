@@ -126,7 +126,7 @@ jobs:
         pip install junitparser
 
     - name: List Downloaded Test Results
-      run: ls -R ./parallel-backend-tests/downloaded-test-results
+      run: ls -R /home/runner/work/parallel-backend-tests/parallel-backend-tests/downloaded-test-results
     - name: Merge JUnit Test Reports
       run: |
         python -m venv venv
