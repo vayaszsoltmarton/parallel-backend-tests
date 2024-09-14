@@ -2,7 +2,7 @@ import os
 from junitparser import JUnitXml
 
 # Directory where test reports are stored
-test_report_dir = "../downloaded-test-results/"
+test_report_dir = "./downloaded-test-results/"
 merged_report = JUnitXml()
 
 # Loop through all XML files and merge them
