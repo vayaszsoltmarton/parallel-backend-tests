@@ -105,11 +105,16 @@ jobs:
           name: test-results-${{ matrix.runner-index }}
           path: parallel-backend-tests/core/build/test-results/test
 
+      # - name: Download Test Results
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     name: test-results-${{ matrix.runner-index }}  # Use matrix index to match artifact names
+      #     path: ./downloaded-test-results/runner-${{ matrix.runner-index }}
       - name: Download Test Results
         uses: actions/download-artifact@v4
         with:
-          name: test-results-${{ matrix.runner-index }}  # Use matrix index to match artifact names
-          path: ./downloaded-test-results/runner-${{ matrix.runner-index }}    
+          name: test-results-${{ matrix.runner-index }}  # Ensure the name matches
+          path: ./downloaded-test-results     
     
   aggregate-results:
     runs-on: ubuntu-latest
@@ -124,6 +129,9 @@ jobs:
         python -m venv venv
         source venv/bin/activate
         pip install junitparser
+
+    - name: Show current working directory
+      run: pwd
 
     - name: List All Files in the Workspace
       run: ls -R .
