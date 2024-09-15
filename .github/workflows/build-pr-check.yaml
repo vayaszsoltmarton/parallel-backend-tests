@@ -123,8 +123,8 @@ jobs:
       run: |
         for i in $(seq 0 $((${{ env.total-runners }} - 1))); do
           echo "Downloading test results for runner $i"
-          gh run download --artifact "test-results-${i}" --dir "./downloaded-test-results/runner-${i}" || echo "Runner $i had no results"
-        done      
+          gh run download --name "test-results-${i}" --dir "./downloaded-test-results/runner-${i}" || echo "Runner $i had no results"
+        done  
 
     - name: Install Python dependencies
       run: |
