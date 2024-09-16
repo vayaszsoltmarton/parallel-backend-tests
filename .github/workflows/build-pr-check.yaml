@@ -159,11 +159,13 @@ jobs:
         name: unified-test-results
         path: unified-test-results/unified-report.xml
 
-    # Display the unified report in the GitHub Checks tab
+    # Display the unified JUnit test results in the GitHub Checks tab using mikepenz/action-junit-report@v4
     - name: Display Unified Test Results in UI
-      uses: ArtiomTr/upload-junit-report@v3
+      uses: mikepenz/action-junit-report@v4
       with:
         report_paths: unified-test-results/unified-report.xml
+        check_name: 'JUnit Test Results'
+        fail_on_failure: true  # Optional: Will mark the workflow as failed if any tests fail
 
       # - name: Cache Unified JUnit Test Reports
       #   uses: actions/cache@v3
