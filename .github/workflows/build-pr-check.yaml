@@ -162,6 +162,7 @@ jobs:
       with:
         report_paths: unified-test-results/unified-report.xml
         check_name: 'JUnit Test Results'
+        summary: 'JUnit Test Results Summary'
         fail_on_failure: true
         include_passed: true    # Include passed test cases in the report
         include_failed: true    # Include failed test cases in the report
