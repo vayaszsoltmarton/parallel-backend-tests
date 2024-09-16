@@ -56,10 +56,107 @@ jobs:
           split-total: ${{ env.total-runners }}
           split-index: ${{ matrix.runner-index }}
 
-      - name: Run tests
+      - name: Set image variable for tests
         run: |
-          # Run only the tests assigned to this runner
-          echo "Running tests: ${{ steps.split-tests.outputs.test-suite }}"
-          cd parallel-backend-tests/core
-          chmod +x ../gradlew
-          ../gradlew test --tests "${{ steps.split-tests.outputs.test-suite }}"
+              # Store original paths in a variable
+              ORIGINAL_PATHS="${{ steps.split-tests.outputs.test-suite }}"
+
+              if [ -z "$ORIGINAL_PATHS" ]; then
+                echo "No tests found to run."
+                exit 1
+              fi
+
+              echo "Original file paths: $ORIGINAL_PATHS"
+
+              # Convert file paths to the desired format using a simpler method
+              # Convert file paths to the desired format using a simpler method
+              TEST_CLASSES=""
+              for path in $ORIGINAL_PATHS; do
+                # Remove base directory path, replace slashes with dots, remove .java, format with --tests
+                class_name=$(echo "$path" | sed 's|parallel-backend-tests/core/src/test/java/||; s|/|.|g; s|\.java$||')
+                TEST_CLASSES="$TEST_CLASSES --tests '$class_name'"
+              done
+
+              # Ensure TEST_CLASSES is not empty after formatting
+              if [ -z "$TEST_CLASSES" ]; then
+                echo "No test classes found after formatting!"
+                exit 1
+              fi
+
+              echo "Formatted test classes: ${TEST_CLASSES}"
+              echo "Command to execute: ./gradlew test ${TEST_CLASSES} --warning-mode all "
+              echo "image=${TEST_CLASSES}" >> $GITHUB_ENV
+              echo "./gradlew core:test ${{ env.image }} --warning-mode all "
+      - name: Run tests with image variable
+        run: |
+              echo "./gradlew core:test ${{ env.image }} --warning-mode all "
+
+              # Run Gradle with fully qualified test class names
+              cd parallel-backend-tests
+              chmod +x ./gradlew
+              #./gradlew core:test --tests 'org.parallel.big.BigExecution3Test' --warning-mode all
+              #./gradlew core:test --tests 'org.parallel.big.BigExecution6Test' --tests 'org.parallel.huge.HugeExecution3Test' --warning-mode all
+              ./gradlew core:test ${{ env.image }} --warning-mode all 
+
+      - name: Upload Test Results
+        if: success() || failure() # always run even if the previous step fails
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.runner-index }}
+          path: parallel-backend-tests/core/build/test-results/test
+
+      # - name: Download Test Results
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     name: test-results-${{ matrix.runner-index }}  # Use matrix index to match artifact names
+      #     path: ./downloaded-test-results/runner-${{ matrix.runner-index }}
+    
+  aggregate-results:
+    runs-on: ubuntu-latest
+    name: Aggregate test results and cache unified report
+    needs: run-parallel-tests
+    steps:
+    - name: Checkout project sources
+      uses: actions/checkout@v3
+
+    - name: Download Test Results for All Runners
+      env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Add this line to set the token
+      run: |
+        for i in $(seq 0 $((${{ env.total-runners }} - 1))); do
+          echo "Downloading test results for runner $i"
+          gh run download --name "test-results-${i}" --dir "./downloaded-test-results/runner-${i}" || echo "Runner $i had no results"
+        done  
+
+    - name: Install Python dependencies
+      run: |
+        python -m venv venv
+        source venv/bin/activate
+        pip install junitparser
+
+    - name: Show current working directory
+      run: pwd
+
+    - name: List All Files in the Workspace
+      run: ls -R .
+
+    - name: Merge JUnit Test Reports
+      run: |
+        python -m venv venv
+        source venv/bin/activate
+        python scripts/merge_junit_reports.py
+        
+    - name: Upload Unified Test Results
+      uses: actions/upload-artifact@v4
+      with:
+        name: unified-test-results
+        path: unified-test-results/unified-report.xml      
+      # - name: Cache Unified JUnit Test Reports
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: unified-test-results/
+      #     key: unified-junit-test-results-${{ github.sha }}
+      #     restore-keys: |
+      #       unified-junit-test-results-     
+        
+              
