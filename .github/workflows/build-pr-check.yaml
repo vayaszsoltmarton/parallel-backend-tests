@@ -164,6 +164,8 @@ jobs:
         check_name: 'JUnit Test Results'
         fail_on_failure: true  # Optional: Will mark the workflow as failed if any tests fail
         include_passed: true   # Include passed results
+        detailed_summary: true
+        flaky_summary: true
 
       # - name: Cache Unified JUnit Test Reports
       #   uses: actions/cache@v3
