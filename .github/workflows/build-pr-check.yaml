@@ -150,7 +150,21 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: unified-test-results
-        path: unified-test-results/unified-report.xml      
+        path: unified-test-results/unified-report.xml
+
+    # Upload the unified report artifact (for download)
+    - name: Upload Unified Test Results as Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: unified-test-results
+        path: unified-test-results/unified-report.xml
+
+    # Display the unified report in the GitHub Checks tab
+    - name: Display Unified Test Results in UI
+      uses: ArtiomTr/upload-junit-report@v3
+      with:
+        report_paths: unified-test-results/unified-report.xml
+
       # - name: Cache Unified JUnit Test Reports
       #   uses: actions/cache@v3
       #   with:
