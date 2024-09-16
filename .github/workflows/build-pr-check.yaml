@@ -157,24 +157,25 @@ jobs:
         path: unified-test-results/unified-report.xml
 
     # Display the unified JUnit test results in the GitHub Checks tab using mikepenz/action-junit-report@v4
-#    - name: Display Unified Test Results in UI
-#      uses: mikepenz/action-junit-report@v4.3.1
-#      with:
-#        report_paths: unified-test-results/unified-report.xml
-#        check_name: 'JUnit Test Results'
-#        summary: 'JUnit Test Results Summary'
-#        fail_on_failure: true
-#        include_passed: true    # Include passed test cases in the report
-#        detailed_summary: true  # Show a detailed table in the summary
     - name: Display Unified Test Results in UI
-      uses: dorny/test-reporter@v1
+      uses: mikepenz/action-junit-report@v4.3.1
       with:
-        name: JUnit Test Results  # Check run name
-        path: unified-test-results/unified-report.xml
-        reporter: jest-junit  # Use the JUnit format
-        fail-on-error: true  # Optional: Fail workflow if there are failed tests
-        require-tests: true  # Fail if no test results are found
-        token: ${{ secrets.GITHUB_TOKEN }}  # Required for creating annotations
+        report_paths: unified-test-results/unified-report.xml
+        check_name: 'JUnit Test Results'
+        summary: 'JUnit Test Results Summary'
+        fail_on_failure: true
+        include_passed: true    # Include passed test cases in the report
+        detailed_summary: true  # Show a detailed table in the summary
+        check_annotations: true
+#    - name: Display Unified Test Results in UI
+#      uses: dorny/test-reporter@v1
+#      with:
+#        name: JUnit Test Results  # Check run name
+#        path: unified-test-results/unified-report.xml
+#        reporter: jest-junit  # Use the JUnit format
+#        fail-on-error: true  # Optional: Fail workflow if there are failed tests
+#        require-tests: true  # Fail if no test results are found
+#        token: ${{ secrets.GITHUB_TOKEN }}  # Required for creating annotations
 
       # - name: Cache Unified JUnit Test Reports
       #   uses: actions/cache@v3
