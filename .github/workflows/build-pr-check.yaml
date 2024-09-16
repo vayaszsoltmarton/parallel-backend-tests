@@ -171,7 +171,7 @@ jobs:
       with:
         name: JUnit Test Results  # Check run name
         path: unified-test-results/unified-report.xml
-        reporter: junit  # Use the JUnit format
+        reporter: jest-junit  # Use the JUnit format
         fail-on-error: true  # Optional: Fail workflow if there are failed tests
         require-tests: true  # Fail if no test results are found
         token: ${{ secrets.GITHUB_TOKEN }}  # Required for creating annotations
