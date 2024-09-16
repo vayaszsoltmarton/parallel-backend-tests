@@ -7,7 +7,11 @@ on:
 env:
   total-runners: 5    
 
-
+# Permissions block to grant write permissions to the 'checks' API
+permissions:
+  contents: read
+  checks: write  # This is needed to create check runs in the GitHub UI
+  actions: write
 
 jobs:
   runner-indexes:
@@ -159,6 +163,7 @@ jobs:
         report_paths: unified-test-results/unified-report.xml
         check_name: 'JUnit Test Results'
         fail_on_failure: true  # Optional: Will mark the workflow as failed if any tests fail
+        include_passed: true   # Include passed results
 
       # - name: Cache Unified JUnit Test Reports
       #   uses: actions/cache@v3
