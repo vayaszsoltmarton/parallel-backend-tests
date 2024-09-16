@@ -39,6 +39,11 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+
+    // To allow test filtering
+    filter {
+        includeTestsMatching "*"
+    }
 }
 
 test {
