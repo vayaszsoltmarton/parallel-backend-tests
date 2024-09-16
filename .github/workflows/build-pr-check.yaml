@@ -158,14 +158,16 @@ jobs:
 
     # Display the unified JUnit test results in the GitHub Checks tab using mikepenz/action-junit-report@v4
     - name: Display Unified Test Results in UI
-      uses: mikepenz/action-junit-report@v4
+      uses: mikepenz/action-junit-report@v4.3.1
       with:
         report_paths: unified-test-results/unified-report.xml
         check_name: 'JUnit Test Results'
-        fail_on_failure: true  # Optional: Will mark the workflow as failed if any tests fail
-        include_passed: true   # Include passed results
-        detailed_summary: true
-        debug: true
+        fail_on_failure: true
+        include_passed: true    # Include passed test cases in the report
+        include_failed: true    # Include failed test cases in the report
+        include_skipped: true   # Include skipped test cases in the report
+        detailed_summary: true  # Show a detailed table in the summary
+        flaky_summary: true     # Optional: mark flaky tests in a separate summary
 
       # - name: Cache Unified JUnit Test Reports
       #   uses: actions/cache@v3
