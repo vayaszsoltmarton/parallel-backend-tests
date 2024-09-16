@@ -152,13 +152,6 @@ jobs:
         name: unified-test-results
         path: unified-test-results/unified-report.xml
 
-    # Upload the unified report artifact (for download)
-    - name: Upload Unified Test Results as Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: unified-test-results
-        path: unified-test-results/unified-report.xml
-
     # Display the unified JUnit test results in the GitHub Checks tab using mikepenz/action-junit-report@v4
     - name: Display Unified Test Results in UI
       uses: mikepenz/action-junit-report@v4
