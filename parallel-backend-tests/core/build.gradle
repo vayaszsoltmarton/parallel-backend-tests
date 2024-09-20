@@ -40,6 +40,12 @@ dependencies {
 tasks.test {
     useJUnitPlatform()
 
+    // Enable JUnit XML reports
+    reports {
+        enabled = true
+        destination = file("${buildDir}/test-results/test") // Default output location
+    }
+
     // To allow test filtering
     filter {
         includeTestsMatching "*"

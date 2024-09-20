@@ -142,8 +142,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results-${{ matrix.runner-index }}
-#          path: parallel-backend-tests/core/build/test-results/test
-          path: parallel-backend-tests
+          path: parallel-backend-tests/core/build/test-results/test
 
   aggregate-results:
     runs-on: ubuntu-latest
