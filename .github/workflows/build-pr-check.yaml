@@ -53,7 +53,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: |
-            ./unified-test-results/unified-report.xml
+            unified-test-results
           key: junit-${{github.base_ref}}-v1
           restore-keys: |
             junit-${{github.base_ref}}
