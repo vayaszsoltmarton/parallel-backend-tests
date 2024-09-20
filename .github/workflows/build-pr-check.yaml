@@ -50,9 +50,10 @@ jobs:
       # Restore cached JUnit test results (if available)
       - name: Restore JUnit Cache
         id: cache-junit
-        uses: actions/cache@v3
+        uses: actions/cache@v2
         with:
-          path: downloaded-test-results
+          path: |
+            downloaded-test-results/**/TEST-*.xml
           key: junit-${{github.base_ref}}-v1
           restore-keys: |
             junit-${{github.base_ref}}
@@ -61,7 +62,7 @@ jobs:
       - name: Check if JUnit Results Exist
         id: check-junit
         run: |
-          if [ -d "junit-results" ] && [ "$(ls -A downloaded-test-results/*.xml 2>/dev/null)" ]; then
+          if find downloaded-test-results -type f -name "TEST-*.xml" | grep -q .; then
             echo "JUnit results found. Setting flag to true."
             echo "::set-output name=use-junit-results::true"
           else
@@ -174,7 +175,8 @@ jobs:
       uses: actions/cache@v3
       with:
         key: junit-${{github.base_ref}}-v1
-        path: './downloaded-test-results/**/TEST-*.xml'
+        path: |
+          ./downloaded-test-results/**/TEST-*.xml
 
     - name: Display Test Results in UI
       uses: mikepenz/action-junit-report@v4.3.1
