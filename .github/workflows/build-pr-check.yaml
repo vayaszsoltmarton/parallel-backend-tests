@@ -106,10 +106,11 @@ jobs:
       - name: Set image variable for tests
         run: |
               # Store original paths in a variable
-               ORIGINAL_PATHS="${{ steps.split-tests.outputs.test-suite }}"
 #              ORIGINAL_PATHS="${{ steps.split-tests.outputs.paths }}"
 #              IFS=' ' read -r -a my_array <<< "$ORIGINAL_PATHS"
 
+              ORIGINAL_PATHS="${{ steps.split-tests.outputs.test-suite }}"
+  
               if [ -z "$ORIGINAL_PATHS" ]; then
                 echo "No tests found to run."
                 exit 1
