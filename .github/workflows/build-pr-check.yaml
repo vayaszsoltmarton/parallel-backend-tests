@@ -52,7 +52,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
 
-      - uses: chaosaffe/split-tests@v1-alpha.1
+      - uses: scruplelesswizard/split-tests@v1-alpha.1
         id: split-tests
         name: Split tests
         with:
@@ -108,12 +108,6 @@ jobs:
         with:
           name: test-results-${{ matrix.runner-index }}
           path: parallel-backend-tests/core/build/test-results/test
-
-      # - name: Download Test Results
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     name: test-results-${{ matrix.runner-index }}  # Use matrix index to match artifact names
-      #     path: ./downloaded-test-results/runner-${{ matrix.runner-index }}
     
   aggregate-results:
     runs-on: ubuntu-latest
@@ -130,41 +124,15 @@ jobs:
         for i in $(seq 0 $((${{ env.total-runners }} - 1))); do
           echo "Downloading test results for runner $i"
           gh run download --name "test-results-${i}" --dir "./downloaded-test-results/runner-${i}" || echo "Runner $i had no results"
-        done  
+        done
 
-    - name: Install Python dependencies
-      run: |
-        python -m venv venv
-        source venv/bin/activate
-        pip install junitparser
-
-    - name: Show current working directory
-      run: pwd
-
-    - name: List All Files in the Workspace
-      run: ls -R .
-
-    - name: Merge JUnit Test Reports
-      run: |
-        python -m venv venv
-        source venv/bin/activate
-        python scripts/merge_junit_reports.py
-        
-    - name: Upload Unified Test Results
-      uses: actions/upload-artifact@v4
+    - name: Display Test Results in UI
+      uses: mikepenz/action-junit-report@v4.3.1
+      if: success() || failure() # always run even if the previous step fails
       with:
-        name: unified-test-results
-        path: unified-test-results/unified-report.xml
-
-    - name: Display Unified Test Results in UI
-      uses: dorny/test-reporter@v1.9.1
-      with:
-        name: JUnit Test Results  # Check run name
-        path: unified-test-results/unified-report.xml
-        reporter: jest-junit  # Use the JUnit format
-        fail-on-error: true  # Optional: Fail workflow if there are failed tests
-        require-tests: true  # Fail if no test results are found
-        token: ${{ secrets.GITHUB_TOKEN }}  # Required for creating annotations
+        report_paths: './downloaded-test-results/**/TEST-*.xml'
+        check_name: 'Parallel backend Tests Result'
+        detailed_summary: true
 
       # - name: Cache Unified JUnit Test Reports
       #   uses: actions/cache@v3
