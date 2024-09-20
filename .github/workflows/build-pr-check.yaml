@@ -47,6 +47,45 @@ jobs:
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
 
+      # Restore cached JUnit test results (if available)
+      - name: Restore JUnit Cache
+        id: cache-junit
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            unified-test-results
+          key: junit-${{github.base_ref}}-v1
+          restore-keys: |
+            junit-${{github.base_ref}}
+
+      # Conditional logic: Check if JUnit results are available and set an output variable
+      - name: Check if JUnit Results Exist
+        id: check-junit
+        run: |
+          if [ -d "unified-test-results" ] && find unified-test-results -type f -name "*.xml" | grep -q .; then
+            echo "JUnit results found. Setting flag to true."
+            echo "::set-output name=use-junit-results::true"
+            echo "use_junit_results=true" >> $GITHUB_ENV
+          else
+            echo "JUnit results not found. Setting flag to false."
+            echo "::set-output name=use-junit-results::false"
+            echo "use_junit_results=false" >> $GITHUB_ENV
+          fi
+
+      - name: Check Cache Status
+        id: cache-status
+        run: |
+          echo "Cache Hit Status: ${{ env.use_junit_results }}"
+
+      - name: List Cached Files
+        if: env.use_junit_results == 'true'
+        run: |
+          echo "Cached files:"
+          ls -la ./unified-test-results
+#
+      - name: List JUnit Results Directory
+        run: ls -R ./unified-test-results
+
       - uses: scruplelesswizard/split-tests@v1-alpha.1
         id: split-tests
         name: Split tests
@@ -121,6 +160,42 @@ jobs:
           echo "Downloading test results for runner $i"
           gh run download --name "test-results-${i}" --dir "./downloaded-test-results/runner-${i}" || echo "Runner $i had no results"
         done    
+
+    # Determine if we should update the cache
+    - name: Determine Cache Update
+      id: cache-update
+      if: success() || failure() # always run even if the previous step fails
+      run: |
+        if [ "${GITHUB_EVENT_NAME}" == "pull_request" ]; then
+          echo "Updating cache because it's a PR."
+          echo "CACHE_UPDATE=true" >> $GITHUB_ENV
+        elif [ "${GITHUB_REF#refs/heads/}" == "main" ] || [ "${GITHUB_REF#refs/heads/}" == "show-junit-report" ]; then
+          echo "Updating cache because it's a branch match."
+          echo "CACHE_UPDATE=true" >> $GITHUB_ENV
+        else
+          echo "CACHE_UPDATE=false" >> $GITHUB_ENV
+        fi    
+
+    - name: Install Python dependencies
+      run: |
+        python -m venv venv
+        source venv/bin/activate
+        pip install junitparser
+
+    - name: Merge JUnit Test Reports
+      run: |
+        python -m venv venv
+        source venv/bin/activate
+        python scripts/merge_junit_reports.py      
+
+    - name: Update cache with latest test results (if merging minor to major)
+      if: env.CACHE_UPDATE == 'true' && (success() || failure())
+      uses: actions/cache@v4
+      with:
+        key: junit-${{github.base_ref}}-v1
+        save-always: true
+        path: |
+          unified-test-results        
 
     - name: Display Test Results in UI
       uses: mikepenz/action-junit-report@v4.3.1
