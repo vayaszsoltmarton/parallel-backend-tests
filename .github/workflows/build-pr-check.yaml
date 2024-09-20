@@ -115,8 +115,8 @@ jobs:
                 echo "No tests found to run."
                 exit 1
               fi
-
-              echo "Original file paths: $ORIGINAL_PATHS"
+                
+              echo "Original file paths $ORIGINAL_PATHS"
 
               # Convert file paths to the desired format using a simpler method
               # Convert file paths to the desired format using a simpler method
