@@ -47,61 +47,61 @@ jobs:
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
 
-      # Restore cached JUnit test results (if available)
-      - name: Restore JUnit Cache
-        id: cache-junit
-        uses: actions/cache/restore@v4
-        with:
-          path: |
-            ./downloaded-test-results/**/TEST-*.xml
-          key: junit-${{github.base_ref}}-v1
-          restore-keys: |
-            junit-${{github.base_ref}}
-
-      # Conditional logic: Check if JUnit results are available and set an output variable
-      - name: Check if JUnit Results Exist
-        id: check-junit
-        run: |
-          if [ -d "downloaded-test-results" ] && find downloaded-test-results -type f -name "TEST-*.xml" | grep -q .; then
-            echo "JUnit results found. Setting flag to true."
-            echo "::set-output name=use-junit-results::true"
-            echo "use_junit_results=true" >> $GITHUB_ENV
-          else
-            echo "JUnit results not found. Setting flag to false."
-            echo "::set-output name=use-junit-results::false"
-            echo "use_junit_results=false" >> $GITHUB_ENV
-          fi
-
-      - name: Check Cache Status
-        id: cache-status
-        run: |
-          echo "Cache Hit Status: ${{ env.use_junit_results }}"
-
-      - name: List Cached Files
-        if: env.use_junit_results == 'true'
-        run: |
-          echo "Cached files:"
-          ls -la ./downloaded-test-results   
-
-      - name: List JUnit Results Directory
-        run: ls -R ./downloaded-test-results
-
-#      - uses: scruplelesswizard/split-tests@v1-alpha.1
-#        id: split-tests
-#        name: Split tests
+#      # Restore cached JUnit test results (if available)
+#      - name: Restore JUnit Cache
+#        id: cache-junit
+#        uses: actions/cache/restore@v4
 #        with:
-#          glob: parallel-backend-tests/core/**/*Test.java
-#          split-total: ${{ env.total-runners }}
-#          split-index: ${{ matrix.runner-index }}
-#          junit-path: ${{ env.use_junit_results == 'true' && './downloaded-test-results/**/*.xml' || '' }}
+#          path: |
+#            ./unified-test-results/unified-report.xml
+#          key: junit-${{github.base_ref}}-v1
+#          restore-keys: |
+#            junit-${{github.base_ref}}
+#
+#      # Conditional logic: Check if JUnit results are available and set an output variable
+#      - name: Check if JUnit Results Exist
+#        id: check-junit
+#        run: |
+#          if [ -d "unified-test-results" ] && find unified-test-results -type f -name "*.xml" | grep -q .; then
+#            echo "JUnit results found. Setting flag to true."
+#            echo "::set-output name=use-junit-results::true"
+#            echo "use_junit_results=true" >> $GITHUB_ENV
+#          else
+#            echo "JUnit results not found. Setting flag to false."
+#            echo "::set-output name=use-junit-results::false"
+#            echo "use_junit_results=false" >> $GITHUB_ENV
+#          fi
+#
+#      - name: Check Cache Status
+#        id: cache-status
+#        run: |
+#          echo "Cache Hit Status: ${{ env.use_junit_results }}"
+#
+#      - name: List Cached Files
+#        if: env.use_junit_results == 'true'
+#        run: |
+#          echo "Cached files:"
+#          ls -la ./unified-test-results
+#
+#      - name: List JUnit Results Directory
+#        run: ls -R ./unified-test-results
 
-      - uses: r7kamura/split-tests-by-timings@v0
+      - uses: scruplelesswizard/split-tests@v1-alpha.1
         id: split-tests
+        name: Split tests
         with:
-          reports: ${{ env.use_junit_results == 'true' && './downloaded-test-results/**/*.xml' || '' }}
           glob: parallel-backend-tests/core/**/*Test.java
-          index: ${{ matrix.runner-index }}
-          total: ${{ env.total-runners }}
+          split-total: ${{ env.total-runners }}
+          split-index: ${{ matrix.runner-index }}
+          # junit-path: ${{ env.use_junit_results == 'true' && './unified-test-results/unified-report.xml' || '' }}
+
+#      - uses: r7kamura/split-tests-by-timings@v0
+#        id: split-tests
+#        with:
+#          reports: ${{ env.use_junit_results == 'true' && './downloaded-test-results/**/*.xml' || '' }}
+#          glob: parallel-backend-tests/core/**/*Test.java
+#          index: ${{ matrix.runner-index }}
+#          total: ${{ env.total-runners }}
 
       - name: Set image variable for tests
         run: |
@@ -186,6 +186,18 @@ jobs:
           echo "CACHE_UPDATE=false" >> $GITHUB_ENV
         fi    
 
+    - name: Install Python dependencies
+      run: |
+        python -m venv venv
+        source venv/bin/activate
+        pip install junitparser
+
+    - name: Merge JUnit Test Reports
+      run: |
+        python -m venv venv
+        source venv/bin/activate
+        python scripts/merge_junit_reports.py      
+
     - name: Update cache with latest test results (if merging minor to major)
       if: env.CACHE_UPDATE == 'true' && (success() || failure())
       uses: actions/cache@v4
@@ -193,7 +205,7 @@ jobs:
         key: junit-${{github.base_ref}}-v1
         save-always: true
         path: |
-          ./downloaded-test-results
+          ./unified-test-results        
 
     - name: Display Test Results in UI
       uses: mikepenz/action-junit-report@v4.3.1
