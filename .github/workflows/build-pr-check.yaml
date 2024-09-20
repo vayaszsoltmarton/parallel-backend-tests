@@ -36,11 +36,6 @@ jobs:
       matrix:
         runner-index: ${{ fromjson(needs.runner-indexes.outputs.json) }}  
     steps:
-      - name: Set Berlin Timezone
-        uses: szenius/set-timezone@v1.2
-        with:
-          timezoneLinux: "Europe/Berlin"
-
       - name: Checkout project sources
         uses: actions/checkout@v3
 
@@ -51,6 +46,39 @@ jobs:
           cache: 'gradle'
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
+
+      # Restore cached JUnit test results (if available)
+      - name: Restore JUnit Cache
+        id: cache-junit
+        uses: actions/cache@v3
+        with:
+          path: downloaded-test-results
+          key: junit-${{github.base_ref}}-v1
+          restore-keys: |
+            junit-${{github.base_ref}}
+
+      # Conditional logic: Check if JUnit results are available and set an output variable
+      - name: Check if JUnit Results Exist
+        id: check-junit
+        run: |
+          if [ -d "junit-results" ] && [ "$(ls -A downloaded-test-results/*.xml 2>/dev/null)" ]; then
+            echo "JUnit results found. Setting flag to true."
+            echo "::set-output name=use-junit-results::true"
+          else
+            echo "JUnit results not found. Setting flag to false."
+            echo "::set-output name=use-junit-results::false"
+          fi
+
+      - name: Check Cache Status
+        id: cache-status
+        run: |
+          echo "Cache Hit Status: ${{ steps.check-junit.outputs.use-junit-results }}"
+
+      - name: List Cached Files
+        if: steps.check-junit.outputs.use-junit-results == 'true'
+        run: |
+          echo "Cached files:"
+          ls -la ./downloaded-test-results   
 
       - uses: scruplelesswizard/split-tests@v1-alpha.1
         id: split-tests
@@ -124,7 +152,29 @@ jobs:
         for i in $(seq 0 $((${{ env.total-runners }} - 1))); do
           echo "Downloading test results for runner $i"
           gh run download --name "test-results-${i}" --dir "./downloaded-test-results/runner-${i}" || echo "Runner $i had no results"
-        done
+        done    
+
+    # Determine if we should update the cache
+    - name: Determine Cache Update
+      id: cache-update
+      if: success() || failure() # always run even if the previous step fails
+      run: |
+        if [ "${GITHUB_EVENT_NAME}" == "pull_request" ]; then
+          echo "Updating cache because it's a PR."
+          echo "CACHE_UPDATE=true" >> $GITHUB_ENV
+        elif [ "${GITHUB_REF#refs/heads/}" == "main" ] || [ "${GITHUB_REF#refs/heads/}" == "show-junit-report" ]; then
+          echo "Updating cache because it's a branch match."
+          echo "CACHE_UPDATE=true" >> $GITHUB_ENV
+        else
+          echo "CACHE_UPDATE=false" >> $GITHUB_ENV
+        fi    
+
+    - name: Update cache with latest test results (if merging minor to major)
+      if: env.CACHE_UPDATE == 'true' && (success() || failure())
+      uses: actions/cache@v3
+      with:
+        key: junit-${{github.base_ref}}-v1
+        path: './downloaded-test-results/**/TEST-*.xml'
 
     - name: Display Test Results in UI
       uses: mikepenz/action-junit-report@v4.3.1
@@ -133,13 +183,5 @@ jobs:
         report_paths: './downloaded-test-results/**/TEST-*.xml'
         check_name: 'Parallel backend Tests Result'
         detailed_summary: true
-
-      # - name: Cache Unified JUnit Test Reports
-      #   uses: actions/cache@v3
-      #   with:
-      #     path: unified-test-results/
-      #     key: unified-junit-test-results-${{ github.sha }}
-      #     restore-keys: |
-      #       unified-junit-test-results-     
         
               
