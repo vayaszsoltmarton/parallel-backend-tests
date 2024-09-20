@@ -50,10 +50,10 @@ jobs:
       # Restore cached JUnit test results (if available)
       - name: Restore JUnit Cache
         id: cache-junit
-        uses: actions/cache@v3
+        uses: actions/cache/restore@v4
         with:
           path: |
-            downloaded-test-results/**/TEST-*.xml
+            /downloaded-test-results/**/TEST-*.xml
           key: junit-${{github.base_ref}}-v1
           restore-keys: |
             junit-${{github.base_ref}}
@@ -174,7 +174,7 @@ jobs:
 
     - name: Update cache with latest test results (if merging minor to major)
       if: env.CACHE_UPDATE == 'true' && (success() || failure())
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         key: junit-${{github.base_ref}}-v1
         path: |
