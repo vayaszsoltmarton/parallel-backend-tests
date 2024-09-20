@@ -86,31 +86,41 @@ jobs:
       - name: List JUnit Results Directory
         run: ls -R ./downloaded-test-results
 
-      - uses: scruplelesswizard/split-tests@v1-alpha.1
+`#      - uses: scruplelesswizard/split-tests@v1-alpha.1
+#        id: split-tests
+#        name: Split tests
+#        with:
+#          glob: parallel-backend-tests/core/**/*Test.java
+#          split-total: ${{ env.total-runners }}
+#          split-index: ${{ matrix.runner-index }}
+#          junit-path: ${{ env.use_junit_results == 'true' && './downloaded-test-results/**/*.xml' || '' }}
+
+      - uses: r7kamura/split-tests-by-timings@v0
         id: split-tests
-        name: Split tests
         with:
-          glob: parallel-backend-tests/core/**/*Test.java
-          split-total: ${{ env.total-runners }}
-          split-index: ${{ matrix.runner-index }}
-          junit-path: ${{ env.use_junit_results == 'true' && './downloaded-test-results/**/*.xml' || '' }}
+          reports: ./downloaded-test-results/**/*.xml
+          glob: spec/**/*_spec.rb
+          index: ${{ matrix.ci_node_index }}
+          total: 4
 
       - name: Set image variable for tests
         run: |
               # Store original paths in a variable
-              ORIGINAL_PATHS="${{ steps.split-tests.outputs.test-suite }}"
+              # ORIGINAL_PATHS="${{ steps.split-tests.outputs.test-suite }}"
+              ORIGINAL_PATHS="${{ steps.split-tests.outputs.paths }}"
+              IFS=' ' read -r -a my_array <<< "$ORIGINAL_PATHS"
 
-              if [ -z "$ORIGINAL_PATHS" ]; then
+              if [ -z "$my_array" ]; then
                 echo "No tests found to run."
                 exit 1
               fi
 
-              echo "Original file paths: $ORIGINAL_PATHS"
+              echo "Original file paths: $my_array"
 
               # Convert file paths to the desired format using a simpler method
               # Convert file paths to the desired format using a simpler method
               TEST_CLASSES=""
-              for path in $ORIGINAL_PATHS; do
+              for path in $my_array; do
                 # Remove base directory path, replace slashes with dots, remove .java, format with --tests
                 class_name=$(echo "$path" | sed 's|parallel-backend-tests/core/src/test/java/||; s|/|.|g; s|\.java$||')
                 TEST_CLASSES="$TEST_CLASSES --tests '$class_name'"
