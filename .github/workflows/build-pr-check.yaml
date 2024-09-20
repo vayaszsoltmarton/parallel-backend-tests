@@ -106,21 +106,21 @@ jobs:
       - name: Set image variable for tests
         run: |
               # Store original paths in a variable
-              # ORIGINAL_PATHS="${{ steps.split-tests.outputs.test-suite }}"
-              ORIGINAL_PATHS="${{ steps.split-tests.outputs.paths }}"
-              IFS=' ' read -r -a my_array <<< "$ORIGINAL_PATHS"
+               ORIGINAL_PATHS="${{ steps.split-tests.outputs.test-suite }}"
+#              ORIGINAL_PATHS="${{ steps.split-tests.outputs.paths }}"
+#              IFS=' ' read -r -a my_array <<< "$ORIGINAL_PATHS"
 
-              if [ -z "$my_array" ]; then
+              if [ -z "$ORIGINAL_PATHS" ]; then
                 echo "No tests found to run."
                 exit 1
               fi
 
-              echo "Original file paths: $my_array"
+              echo "Original file paths: $ORIGINAL_PATHS"
 
               # Convert file paths to the desired format using a simpler method
               # Convert file paths to the desired format using a simpler method
               TEST_CLASSES=""
-              for path in $my_array; do
+              for path in $ORIGINAL_PATHS; do
                 # Remove base directory path, replace slashes with dots, remove .java, format with --tests
                 class_name=$(echo "$path" | sed 's|parallel-backend-tests/core/src/test/java/||; s|/|.|g; s|\.java$||')
                 TEST_CLASSES="$TEST_CLASSES --tests '$class_name'"
