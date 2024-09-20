@@ -98,10 +98,10 @@ jobs:
       - uses: r7kamura/split-tests-by-timings@v0
         id: split-tests
         with:
-          reports: ./downloaded-test-results/**/*.xml
-          glob: spec/**/*_spec.rb
-          index: ${{ matrix.ci_node_index }}
-          total: 4
+          reports: ${{ env.use_junit_results == 'true' && './downloaded-test-results/**/*.xml' || '' }}
+          glob: parallel-backend-tests/core/**/*Test.java
+          index: ${{ matrix.runner-index }}
+          total: ${{ env.total-runners }}
 
       - name: Set image variable for tests
         run: |
