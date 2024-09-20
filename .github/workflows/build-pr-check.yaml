@@ -90,8 +90,7 @@ jobs:
         id: split-tests
         name: Split tests
         with:
-          working-directory: ./parallel-backend-tests/core/src/test/java
-          glob: /**/*Test.java
+          glob: parallel-backend-tests/core/**/*Test.java
           split-total: ${{ env.total-runners }}
           split-index: ${{ matrix.runner-index }}
           junit-path: ${{ env.use_junit_results == 'true' && './unified-test-results/unified-report.xml' || '' }}
