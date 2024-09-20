@@ -50,7 +50,7 @@ jobs:
       # Restore cached JUnit test results (if available)
       - name: Restore JUnit Cache
         id: cache-junit
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             downloaded-test-results/**/TEST-*.xml
