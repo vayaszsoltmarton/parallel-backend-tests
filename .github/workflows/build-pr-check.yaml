@@ -83,8 +83,8 @@ jobs:
           echo "Cached files:"
           ls -la ./unified-test-results
 #
-      - name: List JUnit Results Directory
-        run: ls -R ./unified-test-results
+#      - name: List JUnit Results Directory
+#        run: ls -R ./unified-test-results
 
       - uses: scruplelesswizard/split-tests@v1-alpha.1
         id: split-tests
@@ -195,7 +195,7 @@ jobs:
         key: junit-${{github.base_ref}}-v1
         save-always: true
         path: |
-          ./unified-test-results        
+          unified-test-results        
 
     - name: Display Test Results in UI
       uses: mikepenz/action-junit-report@v4.3.1
