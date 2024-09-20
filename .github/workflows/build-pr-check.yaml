@@ -47,44 +47,44 @@ jobs:
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
 
-#      # Restore cached JUnit test results (if available)
-#      - name: Restore JUnit Cache
-#        id: cache-junit
-#        uses: actions/cache/restore@v4
-#        with:
-#          path: |
-#            ./unified-test-results/unified-report.xml
-#          key: junit-${{github.base_ref}}-v1
-#          restore-keys: |
-#            junit-${{github.base_ref}}
-#
-#      # Conditional logic: Check if JUnit results are available and set an output variable
-#      - name: Check if JUnit Results Exist
-#        id: check-junit
-#        run: |
-#          if [ -d "unified-test-results" ] && find unified-test-results -type f -name "*.xml" | grep -q .; then
-#            echo "JUnit results found. Setting flag to true."
-#            echo "::set-output name=use-junit-results::true"
-#            echo "use_junit_results=true" >> $GITHUB_ENV
-#          else
-#            echo "JUnit results not found. Setting flag to false."
-#            echo "::set-output name=use-junit-results::false"
-#            echo "use_junit_results=false" >> $GITHUB_ENV
-#          fi
-#
-#      - name: Check Cache Status
-#        id: cache-status
-#        run: |
-#          echo "Cache Hit Status: ${{ env.use_junit_results }}"
-#
-#      - name: List Cached Files
-#        if: env.use_junit_results == 'true'
-#        run: |
-#          echo "Cached files:"
-#          ls -la ./unified-test-results
-#
-#      - name: List JUnit Results Directory
-#        run: ls -R ./unified-test-results
+      # Restore cached JUnit test results (if available)
+      - name: Restore JUnit Cache
+        id: cache-junit
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ./unified-test-results/unified-report.xml
+          key: junit-${{github.base_ref}}-v1
+          restore-keys: |
+            junit-${{github.base_ref}}
+
+      # Conditional logic: Check if JUnit results are available and set an output variable
+      - name: Check if JUnit Results Exist
+        id: check-junit
+        run: |
+          if [ -d "unified-test-results" ] && find unified-test-results -type f -name "*.xml" | grep -q .; then
+            echo "JUnit results found. Setting flag to true."
+            echo "::set-output name=use-junit-results::true"
+            echo "use_junit_results=true" >> $GITHUB_ENV
+          else
+            echo "JUnit results not found. Setting flag to false."
+            echo "::set-output name=use-junit-results::false"
+            echo "use_junit_results=false" >> $GITHUB_ENV
+          fi
+
+      - name: Check Cache Status
+        id: cache-status
+        run: |
+          echo "Cache Hit Status: ${{ env.use_junit_results }}"
+
+      - name: List Cached Files
+        if: env.use_junit_results == 'true'
+        run: |
+          echo "Cached files:"
+          ls -la ./unified-test-results
+
+      - name: List JUnit Results Directory
+        run: ls -R ./unified-test-results
 
       - uses: scruplelesswizard/split-tests@v1-alpha.1
         id: split-tests
@@ -95,20 +95,9 @@ jobs:
           split-index: ${{ matrix.runner-index }}
           # junit-path: ${{ env.use_junit_results == 'true' && './unified-test-results/unified-report.xml' || '' }}
 
-#      - uses: r7kamura/split-tests-by-timings@v0
-#        id: split-tests
-#        with:
-#          reports: ${{ env.use_junit_results == 'true' && './downloaded-test-results/**/*.xml' || '' }}
-#          glob: parallel-backend-tests/core/**/*Test.java
-#          index: ${{ matrix.runner-index }}
-#          total: ${{ env.total-runners }}
-
       - name: Set image variable for tests
         run: |
               # Store original paths in a variable
-#              ORIGINAL_PATHS="${{ steps.split-tests.outputs.paths }}"
-#              IFS=' ' read -r -a my_array <<< "$ORIGINAL_PATHS"
-
               ORIGINAL_PATHS="${{ steps.split-tests.outputs.test-suite }}"
   
               if [ -z "$ORIGINAL_PATHS" ]; then
