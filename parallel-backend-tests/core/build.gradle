@@ -43,29 +43,36 @@ test {
     }
 }
 
-// Register the post-processing task to add the 'file' attribute to the JUnit report
+import groovy.xml.*
+
 tasks.register('addFileAttributeToJUnitReport') {
     doLast {
         def testReportDir = file("$buildDir/test-results/test")
 
-        // Iterate through all generated XML files
-        testReportDir.eachFileRecurse { file ->
-            if (file.name.endsWith('.xml')) {
-                def xml = new XmlSlurper().parse(file)
+        if (testReportDir.exists()) {
+            testReportDir.eachFileRecurse(FileType.FILES) { file ->
+                if (file.name.endsWith('.xml')) {
+                    // Parse the XML file
+                    def xml = new XmlParser().parse(file)
 
-                // Add 'file' attribute to each testsuite and testcase
-                xml.testsuite.each { suite ->
-                    suite.@file = suite.@name  // Use suite name as the file attribute
-                    suite.testcase.each { test ->
-                        test.@file = suite.@name  // Use suite name or customize as needed
+                    // Modify each <testsuite> element to add the 'file' attribute
+                    xml.testsuite.each { suite ->
+                        suite.@file = suite.@name  // Add 'file' attribute
                     }
-                }
 
-                // Write the modified XML back to the file
-                file.withWriter { writer ->
-                    XmlUtil.serialize(xml, writer)
+                    // Optionally, modify each <testcase> element (if needed)
+                    xml.testsuite.testcase.each { test ->
+                        test.@file = test.@classname  // Add 'file' attribute
+                    }
+
+                    // Serialize the modified XML and overwrite the original file
+                    def writer = new StringWriter()
+                    new XmlNodePrinter(new PrintWriter(writer)).print(xml)
+                    file.text = writer.toString()  // Write back the modified XML
                 }
             }
+        } else {
+            println "Test report directory does not exist: $testReportDir"
         }
     }
 }
