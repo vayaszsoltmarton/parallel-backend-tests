@@ -1,5 +1,5 @@
 import os
-from junitparser import JUnitXml, TestSuite, TestCase
+from junitparser import JUnitXml
 
 # Directory where test reports are stored
 test_report_dir = "./downloaded-test-results/"
@@ -15,31 +15,23 @@ for root, dirs, files in os.walk(test_report_dir):
 
             # Append each suite from the xml to the merged_report
             for suite in xml:
-                # Create a new TestSuite object to preserve the file attribute
-                new_suite = TestSuite(name=suite.name,
-                                      tests=suite.tests,
-                                      skipped=suite.skipped,
-                                      failures=suite.failures,
-                                      errors=suite.errors,
-                                      timestamp=suite.timestamp,
-                                      hostname=suite.hostname,
-                                      time=suite.time)
+                # Create a new suite object and copy relevant attributes
+                new_suite = suite.copy()  # This copies the entire suite
 
-                # Preserve the file attribute
+                # Preserve the file attribute for the suite if it exists
                 if hasattr(suite, 'file'):
                     new_suite.file = suite.file
 
                 # Loop through each testcase to preserve the file attribute
                 for case in suite:
-                    new_case = TestCase(name=case.name,
-                                        classname=case.classname,
-                                        time=case.time)
+                    # Create a new TestCase object and copy relevant attributes
+                    new_case = case.copy()  # This copies the entire testcase
 
-                    # Preserve the file attribute in the testcase
+                    # Preserve the file attribute in the testcase if it exists
                     if hasattr(case, 'file'):
                         new_case.file = case.file
 
-                    # Add the testcase to the new suite
+                    # Add the new testcase to the new suite
                     new_suite.append(new_case)
 
                 # Add the new suite to the merged report
