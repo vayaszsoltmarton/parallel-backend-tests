@@ -195,7 +195,14 @@ jobs:
         key: junit-${{github.base_ref}}-v1
         save-always: true
         path: |
-          unified-test-results        
+          unified-test-results
+
+    - name: Upload Test Results
+      if: success() || failure() # always run even if the previous step fails
+      uses: actions/upload-artifact@v4
+      with:
+        name: unified-test-results
+        path: unified-test-results
 
     - name: Display Test Results in UI
       uses: mikepenz/action-junit-report@v4.3.1
