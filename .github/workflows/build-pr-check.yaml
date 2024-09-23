@@ -93,7 +93,7 @@ jobs:
           glob: parallel-backend-tests/core/**/*Test.java
           split-total: ${{ env.total-runners }}
           split-index: ${{ matrix.runner-index }}
-          # junit-path: ${{ env.use_junit_results == 'true' && './unified-test-results/unified-report.xml' || '' }}
+          junit-path: ${{ env.use_junit_results == 'true' && './unified-test-results/unified-report.xml' || '' }}
 
       - name: Set image variable for tests
         run: |
