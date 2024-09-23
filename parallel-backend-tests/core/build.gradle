@@ -48,7 +48,7 @@ import groovy.xml.*
 tasks.register('addFileAttributeToJUnitReport') {
     doLast {
         def testReportDir = file("$buildDir/test-results/test")
-        def projectDir = project.projectDir
+        def sourceDirPrefix = "parallel-backend-tests/core/src/main/java"
 
         if (testReportDir.exists()) {
             println "Test report directory found: $testReportDir"
@@ -63,8 +63,8 @@ tasks.register('addFileAttributeToJUnitReport') {
                     println "Root XML element: ${xml.name()}"
                     println "Found testsuite: ${xml.@name}"
 
-                    // Add the 'file' attribute to the testsuite
-                    def suiteFilePath = "${xml.@name.replace('.', '/')}.groovy" // Assuming tests are in .groovy files
+                    // Create the relative path for the testsuite
+                    def suiteFilePath = "${sourceDirPrefix}/${xml.@name.replace('.', '/')}.java"
                     xml.@file = suiteFilePath
                     println "Added 'file' attribute to testsuite: ${xml.@file}"
 
@@ -72,7 +72,7 @@ tasks.register('addFileAttributeToJUnitReport') {
                     xml.'testcase'.each { test ->
                         println "Found testcase: ${test.@classname}"
                         // Calculate the relative path for the testcase
-                        def testClassPath = "${test.@classname.replace('.', '/')}.groovy" // Adjust the extension if needed
+                        def testClassPath = "${sourceDirPrefix}/${test.@classname.replace('.', '/')}.java"
                         test.@file = testClassPath
                         println "Added 'file' attribute to testcase: ${test.@file}"
                     }
