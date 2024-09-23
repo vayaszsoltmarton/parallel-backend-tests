@@ -49,28 +49,37 @@ tasks.register('addFileAttributeToJUnitReport') {
     doLast {
         def testReportDir = file("$buildDir/test-results/test")
 
-        // Ensure the test results directory exists
         if (testReportDir.exists()) {
+            println "Test report directory found: $testReportDir"
             testReportDir.eachFileRecurse { file ->
-                // Process only XML files
                 if (file.name.endsWith('.xml')) {
+                    println "Processing file: ${file.name}"
+
                     // Parse the XML file
                     def xml = new XmlParser().parse(file)
 
-                    // Add 'file' attribute to each <testsuite> element
-                    xml.testsuite.each { suite ->
-                        suite.@file = suite.@name  // Use suite name as the file attribute
+                    // Check if the testsuite exists and add 'file' attribute
+                    xml.'testsuite'.each { suite ->
+                        println "Adding 'file' attribute to testsuite: ${suite.@name}"
+                        suite.@file = suite.@name  // Add 'file' attribute to testsuite
                     }
 
-                    // Add 'file' attribute to each <testcase> element (optional, can be skipped if not needed)
-                    xml.testsuite.testcase.each { test ->
-                        test.@file = test.@classname  // Use classname as the file attribute for test cases
+                    // Add 'file' attribute to each testcase (if needed)
+                    xml.'testsuite'.'testcase'.each { test ->
+                        println "Adding 'file' attribute to testcase: ${test.@classname}"
+                        test.@file = test.@classname  // Add 'file' attribute to testcase
                     }
 
-                    // Serialize the modified XML and overwrite the original file
+                    // Serialize and save the XML back to the file
                     def writer = new StringWriter()
                     new XmlNodePrinter(new PrintWriter(writer)).print(xml)
-                    file.text = writer.toString()  // Write back the modified XML
+
+                    // Overwrite the file with the modified XML
+                    file.withWriter('UTF-8') { out ->
+                        out.write(writer.toString())
+                    }
+
+                    println "File updated successfully: ${file.name}"
                 }
             }
         } else {
