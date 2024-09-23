@@ -48,7 +48,7 @@ import groovy.xml.*
 tasks.register('addFileAttributeToJUnitReport') {
     doLast {
         def testReportDir = file("$buildDir/test-results/test")
-        def sourceDirPrefix = "parallel-backend-tests/core/src/main/java"
+        def sourceDirPrefix = "parallel-backend-tests/core/src/test/java"
 
         if (testReportDir.exists()) {
             println "Test report directory found: $testReportDir"
