@@ -16,4 +16,9 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+
+    junitXml {
+        enabled = true
+        outputPerTestCase = true  // This enables detailed test case reporting
+    }
 }

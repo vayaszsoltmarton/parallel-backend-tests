@@ -44,6 +44,11 @@ tasks.test {
     filter {
         includeTestsMatching "*"
     }
+
+    junitXml {
+        enabled = true
+        outputPerTestCase = true
+    }
 }
 
 test {
