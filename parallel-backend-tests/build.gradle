@@ -17,8 +17,11 @@ dependencies {
 tasks.test {
     useJUnitPlatform()
 
-    junitXml {
-        enabled = true
-        outputPerTestCase = true  // This enables detailed test case reporting
+    reports {
+        junitXml {
+            enabled = true
+            // Optionally configure the destination
+            destination = file("$buildDir/test-results/test")
+        }
     }
 }

@@ -45,9 +45,12 @@ tasks.test {
         includeTestsMatching "*"
     }
 
-    junitXml {
-        enabled = true
-        outputPerTestCase = true
+    reports {
+        junitXml {
+            enabled = true
+            // Optionally configure the destination
+            destination = file("$buildDir/test-results/test")
+        }
     }
 }
 
