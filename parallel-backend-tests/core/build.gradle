@@ -43,31 +43,6 @@ test {
     }
 }
 
-// Register the test task
-tasks.named('test').configure {
-    useJUnitPlatform()
-
-    // To allow test filtering
-    filter {
-        includeTestsMatching "*"
-    }
-
-    reports {
-        junitXml {
-            // Set the destination directory for XML reports
-            destination = file("$buildDir/test-results/test")
-        }
-    }
-
-    // Ensure the addFileAttributeToJUnitReport task runs after the test task
-    finalizedBy(tasks.named('addFileAttributeToJUnitReport'))
-}
-
-// Ensure the post-processing task runs after the test task completes
-tasks.named('test').configure {
-    finalizedBy('addFileAttributeToJUnitReport')
-}
-
 // Register the post-processing task to add the 'file' attribute to the JUnit report
 tasks.register('addFileAttributeToJUnitReport') {
     doLast {
@@ -94,3 +69,28 @@ tasks.register('addFileAttributeToJUnitReport') {
         }
     }
 }
+
+// Register the test task
+tasks.named('test').configure {
+    useJUnitPlatform()
+
+    // To allow test filtering
+    filter {
+        includeTestsMatching "*"
+    }
+
+    reports {
+        junitXml {
+            // Set the destination directory for XML reports
+            destination = file("$buildDir/test-results/test")
+        }
+    }
+
+    // Ensure the addFileAttributeToJUnitReport task runs after the test task
+    finalizedBy(tasks.named('addFileAttributeToJUnitReport'))
+}
+
+//// Ensure the post-processing task runs after the test task completes
+//tasks.named('test').configure {
+//    finalizedBy('addFileAttributeToJUnitReport')
+//}
