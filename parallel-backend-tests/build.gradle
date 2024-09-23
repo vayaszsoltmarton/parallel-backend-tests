@@ -14,8 +14,14 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter")
 }
 
-tasks.test {
+// Register the test task
+tasks.named('test').configure {
     useJUnitPlatform()
+
+    // To allow test filtering
+    filter {
+        includeTestsMatching "*"
+    }
 
     reports {
         junitXml {
@@ -23,6 +29,9 @@ tasks.test {
             destination = file("$buildDir/test-results/test")
         }
     }
+
+    // Ensure the addFileAttributeToJUnitReport task runs after the test task
+    finalizedBy(tasks.named('addFileAttributeToJUnitReport'))
 }
 
 // Ensure the post-processing task runs after the test task completes

@@ -37,7 +37,14 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-logging"
 }
 
-tasks.test {
+test {
+    testLogging {
+        exceptionFormat = 'full'
+    }
+}
+
+// Register the test task
+tasks.named('test').configure {
     useJUnitPlatform()
 
     // To allow test filtering
@@ -51,12 +58,9 @@ tasks.test {
             destination = file("$buildDir/test-results/test")
         }
     }
-}
 
-test {
-    testLogging {
-        exceptionFormat = 'full'
-    }
+    // Ensure the addFileAttributeToJUnitReport task runs after the test task
+    finalizedBy(tasks.named('addFileAttributeToJUnitReport'))
 }
 
 // Ensure the post-processing task runs after the test task completes
