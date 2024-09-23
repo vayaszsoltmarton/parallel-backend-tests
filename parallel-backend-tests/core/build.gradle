@@ -49,20 +49,22 @@ tasks.register('addFileAttributeToJUnitReport') {
     doLast {
         def testReportDir = file("$buildDir/test-results/test")
 
+        // Ensure the test results directory exists
         if (testReportDir.exists()) {
-            testReportDir.eachFileRecurse(FileType.FILES) { file ->
+            testReportDir.eachFileRecurse { file ->
+                // Process only XML files
                 if (file.name.endsWith('.xml')) {
                     // Parse the XML file
                     def xml = new XmlParser().parse(file)
 
-                    // Modify each <testsuite> element to add the 'file' attribute
+                    // Add 'file' attribute to each <testsuite> element
                     xml.testsuite.each { suite ->
-                        suite.@file = suite.@name  // Add 'file' attribute
+                        suite.@file = suite.@name  // Use suite name as the file attribute
                     }
 
-                    // Optionally, modify each <testcase> element (if needed)
+                    // Add 'file' attribute to each <testcase> element (optional, can be skipped if not needed)
                     xml.testsuite.testcase.each { test ->
-                        test.@file = test.@classname  // Add 'file' attribute
+                        test.@file = test.@classname  // Use classname as the file attribute for test cases
                     }
 
                     // Serialize the modified XML and overwrite the original file
