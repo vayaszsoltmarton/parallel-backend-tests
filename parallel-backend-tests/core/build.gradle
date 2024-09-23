@@ -91,6 +91,6 @@ tasks.named('test').configure {
 }
 
 //// Ensure the post-processing task runs after the test task completes
-//tasks.named('test').configure {
-//    finalizedBy('addFileAttributeToJUnitReport')
-//}
+tasks.named('test').configure {
+    finalizedBy('addFileAttributeToJUnitReport')
+}
