@@ -13,15 +13,16 @@ for root, dirs, files in os.walk(test_report_dir):
             print(f"Found XML file: {report_path}")  # Debug output
             xml = JUnitXml.fromfile(report_path)
 
-            # Add each suite from the xml to the merged_report
+            # Append each suite from the xml to the merged_report
             for suite in xml:
                 # Check for custom file attribute in each testcase
                 for case in suite:
-                    # Optionally add the 'file' attribute as a property
-                    case.properties['file'] = case.properties.get('file', '')  # Preserve the file attribute if it exists
+                    # Preserving the file attribute if it exists
+                    if 'file' in case.properties:
+                        case.file = case.properties['file']
 
-                # Append the suite to the merged report
-                merged_report.add(suite)
+                # Append the suite directly to the merged_report
+                merged_report.suites.append(suite)
 
 # Save the merged report
 os.makedirs("unified-test-results", exist_ok=True)
