@@ -1,5 +1,5 @@
 import os
-from junitparser import JUnitXml, TestCase, TestSuite
+from junitparser import JUnitXml
 
 # Directory where test reports are stored
 test_report_dir = "./downloaded-test-results/"
@@ -13,15 +13,14 @@ for root, dirs, files in os.walk(test_report_dir):
             print(f"Found XML file: {report_path}")  # Debug output
             xml = JUnitXml.fromfile(report_path)
 
+            # Add each suite from the xml to the merged_report
             for suite in xml:
-                # Iterate through each testcase in the suite
+                # Check for custom file attribute in each testcase
                 for case in suite:
-                    # Check for the 'file' attribute
-                    if 'file' in case.properties:
-                        # Store the file attribute
-                        case.file = case.properties['file']
+                    # Optionally add the 'file' attribute as a property
+                    case.properties['file'] = case.properties.get('file', '')  # Preserve the file attribute if it exists
 
-                # Add the suite to the merged report
+                # Append the suite to the merged report
                 merged_report.add(suite)
 
 # Save the merged report
