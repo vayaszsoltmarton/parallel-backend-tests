@@ -19,8 +19,7 @@ tasks.test {
 
     reports {
         junitXml {
-            enabled = true
-            // Optionally configure the destination
+            // Set the destination directory for XML reports
             destination = file("$buildDir/test-results/test")
         }
     }
