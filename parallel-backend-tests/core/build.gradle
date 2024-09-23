@@ -48,6 +48,7 @@ import groovy.xml.*
 tasks.register('addFileAttributeToJUnitReport') {
     doLast {
         def testReportDir = file("$buildDir/test-results/test")
+        def projectDir = project.projectDir
 
         if (testReportDir.exists()) {
             println "Test report directory found: $testReportDir"
@@ -58,25 +59,22 @@ tasks.register('addFileAttributeToJUnitReport') {
                     // Parse the XML file
                     def xml = new XmlParser().parse(file)
 
-                    // Print the structure of the testsuite to verify
+                    // Check if the testsuite exists
                     println "Root XML element: ${xml.name()}"
+                    println "Found testsuite: ${xml.@name}"
 
-                    // Check and update the testsuite elements
-                    xml.testsuite.each { suite ->
-                        println "Found testsuite: ${suite.@name}"
-                        // Add the 'file' attribute to the testsuite
-                        suite.@file = suite.@name
-                        println "Added 'file' attribute to testsuite: ${suite.@file}"
-                    }
+                    // Add the 'file' attribute to the testsuite
+                    def suiteFilePath = "${xml.@name.replace('.', '/')}.groovy" // Assuming tests are in .groovy files
+                    xml.@file = suiteFilePath
+                    println "Added 'file' attribute to testsuite: ${xml.@file}"
 
-                    // Check and update the testcase elements within each testsuite
-                    xml.testsuite.each { suite ->
-                        suite.testcase.each { test ->
-                            println "Found testcase: ${test.@classname}"
-                            // Add the 'file' attribute to the testcase
-                            test.@file = test.@classname
-                            println "Added 'file' attribute to testcase: ${test.@file}"
-                        }
+                    // Iterate over testcases within the testsuite
+                    xml.'testcase'.each { test ->
+                        println "Found testcase: ${test.@classname}"
+                        // Calculate the relative path for the testcase
+                        def testClassPath = "${test.@classname.replace('.', '/')}.groovy" // Adjust the extension if needed
+                        test.@file = testClassPath
+                        println "Added 'file' attribute to testcase: ${test.@file}"
                     }
 
                     // Serialize and save the XML back to the file
