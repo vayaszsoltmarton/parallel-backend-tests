@@ -63,23 +63,21 @@ tasks.register('addFileAttributeToJUnitReport') {
                     if (xml.name() == 'testsuite') {
                         println "Found testsuite: ${xml.@name}"
 
-                        // Rename the root element 'testsuite' to 'testcases'
-                        xml.replaceNode {
-                            testcases(xml.attributes()) {
-                                // Copy all the inner nodes of 'testsuite' into 'testcases'
-                                xml.children().each { node ->
-                                    mkp.yield(node)
-                                }
-                            }
+                        // Create a new root node with name 'testcases'
+                        def newRoot = new Node(null, 'testcases', xml.attributes())
+
+                        // Copy all the children from the old root (testsuite) to the new root (testcases)
+                        xml.children().each { child ->
+                            newRoot.append(child)
                         }
 
                         // Create the relative path for the original testsuite
                         def suiteFilePath = "${sourceDirPrefix}/${xml.@name.replace('.', '/')}.java"
-                        xml.@file = suiteFilePath
-                        println "Added 'file' attribute to testcases: ${xml.@file}"
+                        newRoot.@file = suiteFilePath
+                        println "Added 'file' attribute to testcases: ${newRoot.@file}"
 
-                        // Iterate over testcases within the testcases (formerly testsuite)
-                        xml.'testcase'.each { test ->
+                        // Iterate over testcases within the new testcases root node
+                        newRoot.'testcase'.each { test ->
                             println "Found testcase: ${test.@classname}"
                             // Calculate the relative path for the testcase
                             def testClassPath = "${sourceDirPrefix}/${test.@classname.replace('.', '/')}.java"
@@ -89,7 +87,7 @@ tasks.register('addFileAttributeToJUnitReport') {
 
                         // Serialize and save the modified XML back to the file
                         def writer = new StringWriter()
-                        new XmlNodePrinter(new PrintWriter(writer)).print(xml)
+                        new XmlNodePrinter(new PrintWriter(writer)).print(newRoot)
 
                         // Overwrite the file with the modified XML
                         file.withWriter('UTF-8') { out ->
