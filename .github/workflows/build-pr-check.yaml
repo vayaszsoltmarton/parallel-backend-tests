@@ -48,43 +48,43 @@ jobs:
         uses: gradle/gradle-build-action@v2
 
       # Restore cached JUnit test results (if available)
-      - name: Restore JUnit Cache
-        id: cache-junit
-        uses: actions/cache/restore@v4
-        with:
-          path: |
-            downloaded-test-results
-          key: junit-${{github.base_ref}}-v1
-          restore-keys: |
-            junit-${{github.base_ref}}
+#      - name: Restore JUnit Cache
+#        id: cache-junit
+#        uses: actions/cache/restore@v4
+#        with:
+#          path: |
+#            downloaded-test-results
+#          key: junit-${{github.base_ref}}-v1
+#          restore-keys: |
+#            junit-${{github.base_ref}}
 
       # Conditional logic: Check if JUnit results are available and set an output variable
-      - name: Check if JUnit Results Exist
-        id: check-junit
-        run: |
-          if [ -d "downloaded-test-results" ] && find downloaded-test-results -type f -name "*.xml" | grep -q .; then
-            echo "JUnit results found. Setting flag to true."
-            echo "::set-output name=use-junit-results::true"
-            echo "use_junit_results=true" >> $GITHUB_ENV
-          else
-            echo "JUnit results not found. Setting flag to false."
-            echo "::set-output name=use-junit-results::false"
-            echo "use_junit_results=false" >> $GITHUB_ENV
-          fi
+#      - name: Check if JUnit Results Exist
+#        id: check-junit
+#        run: |
+#          if [ -d "downloaded-test-results" ] && find downloaded-test-results -type f -name "*.xml" | grep -q .; then
+#            echo "JUnit results found. Setting flag to true."
+#            echo "::set-output name=use-junit-results::true"
+#            echo "use_junit_results=true" >> $GITHUB_ENV
+#          else
+#            echo "JUnit results not found. Setting flag to false."
+#            echo "::set-output name=use-junit-results::false"
+#            echo "use_junit_results=false" >> $GITHUB_ENV
+#          fi
 
-      - name: Check Cache Status
-        id: cache-status
-        run: |
-          echo "Cache Hit Status: ${{ env.use_junit_results }}"
-
-      - name: List Cached Files
-        if: env.use_junit_results == 'true'
-        run: |
-          echo "Cached files:"
-          ls -la ./downloaded-test-results
+#      - name: Check Cache Status
+#        id: cache-status
+#        run: |
+#          echo "Cache Hit Status: ${{ env.use_junit_results }}"
 #
-      - name: List JUnit Results Directory
-        run: ls -R ./downloaded-test-results
+#      - name: List Cached Files
+#        if: env.use_junit_results == 'true'
+#        run: |
+#          echo "Cached files:"
+#          ls -la ./downloaded-test-results
+##
+#      - name: List JUnit Results Directory
+#        run: ls -R ./downloaded-test-results
 
       - uses: scruplelesswizard/split-tests@v1-alpha.1
         id: split-tests
