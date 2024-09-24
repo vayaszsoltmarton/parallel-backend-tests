@@ -47,44 +47,44 @@ jobs:
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
 
-      # Restore cached JUnit test results (if available)
-      - name: Restore JUnit Cache
-        id: cache-junit
-        uses: actions/cache/restore@v4
-        with:
-          path: |
-            ./downloaded-test-results
-          key: junit-${{github.base_ref}}-v2
-          restore-keys: |
-            junit-${{github.base_ref}}
-
-      # Conditional logic: Check if JUnit results are available and set an output variable
-      - name: Check if JUnit Results Exist
-        id: check-junit
-        run: |
-          if [ -d "downloaded-test-results" ] && find downloaded-test-results -type f -name "*.xml" | grep -q .; then
-            echo "JUnit results found. Setting flag to true."
-            echo "::set-output name=use-junit-results::true"
-            echo "use_junit_results=true" >> $GITHUB_ENV
-          else
-            echo "JUnit results not found. Setting flag to false."
-            echo "::set-output name=use-junit-results::false"
-            echo "use_junit_results=false" >> $GITHUB_ENV
-          fi
-
-      - name: Check Cache Status
-        id: cache-status
-        run: |
-          echo "Cache Hit Status: ${{ env.use_junit_results }}"
-
-      - name: List Cached Files
-        if: env.use_junit_results == 'true'
-        run: |
-          echo "Cached files:"
-          ls -la ./downloaded-test-results
-
-      - name: List JUnit Results Directory
-        run: ls -R ./downloaded-test-results
+#      # Restore cached JUnit test results (if available)
+#      - name: Restore JUnit Cache
+#        id: cache-junit
+#        uses: actions/cache/restore@v4
+#        with:
+#          path: |
+#            ./downloaded-test-results
+#          key: junit-${{github.base_ref}}-
+#          restore-keys: |
+#            junit-${{github.base_ref}}
+#
+#      # Conditional logic: Check if JUnit results are available and set an output variable
+#      - name: Check if JUnit Results Exist
+#        id: check-junit
+#        run: |
+#          if [ -d "downloaded-test-results" ] && find downloaded-test-results -type f -name "*.xml" | grep -q .; then
+#            echo "JUnit results found. Setting flag to true."
+#            echo "::set-output name=use-junit-results::true"
+#            echo "use_junit_results=true" >> $GITHUB_ENV
+#          else
+#            echo "JUnit results not found. Setting flag to false."
+#            echo "::set-output name=use-junit-results::false"
+#            echo "use_junit_results=false" >> $GITHUB_ENV
+#          fi
+#
+#      - name: Check Cache Status
+#        id: cache-status
+#        run: |
+#          echo "Cache Hit Status: ${{ env.use_junit_results }}"
+#
+#      - name: List Cached Files
+#        if: env.use_junit_results == 'true'
+#        run: |
+#          echo "Cached files:"
+#          ls -la ./downloaded-test-results
+#
+#      - name: List JUnit Results Directory
+#        run: ls -R ./downloaded-test-results
 
       - uses: scruplelesswizard/split-tests@v1-alpha.1
         id: split-tests
@@ -190,9 +190,9 @@ jobs:
 
     - name: Update cache with latest test results (if merging minor to major)
       if: env.CACHE_UPDATE == 'true' && (success() || failure())
-      uses: actions/cache/save@v4
+      uses: actions/cache@v4
       with:
-        key: junit-${{github.base_ref}}-v2
+        key: junit-${{github.base_ref}}-${{ github.run_id }}
         save-always: true
         path: |
           ./downloaded-test-results
