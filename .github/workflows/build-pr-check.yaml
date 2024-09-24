@@ -53,7 +53,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: |
-            unified-test-results
+            downloaded-test-results
           key: junit-${{github.base_ref}}-v1
           restore-keys: |
             junit-${{github.base_ref}}
@@ -62,7 +62,7 @@ jobs:
       - name: Check if JUnit Results Exist
         id: check-junit
         run: |
-          if [ -d "unified-test-results" ] && find unified-test-results -type f -name "*.xml" | grep -q .; then
+          if [ -d "downloaded-test-results" ] && find downloaded-test-results -type f -name "*.xml" | grep -q .; then
             echo "JUnit results found. Setting flag to true."
             echo "::set-output name=use-junit-results::true"
             echo "use_junit_results=true" >> $GITHUB_ENV
@@ -81,10 +81,10 @@ jobs:
         if: env.use_junit_results == 'true'
         run: |
           echo "Cached files:"
-          ls -la ./unified-test-results
+          ls -la ./downloaded-test-results
 #
       - name: List JUnit Results Directory
-        run: ls -R ./unified-test-results
+        run: ls -R ./downloaded-test-results
 
       - uses: scruplelesswizard/split-tests@v1-alpha.1
         id: split-tests
