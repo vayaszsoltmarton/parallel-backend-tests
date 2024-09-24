@@ -64,15 +64,14 @@ jobs:
         run: |
           if [ -d "downloaded-test-results" ] && find downloaded-test-results -type f -name "*.xml" | grep -q .; then
             echo "JUnit results found. Setting flag to true."
-            echo "::set-output name=use-junit-results::true"
             echo "use_junit_results=true" >> $GITHUB_ENV
           else
             echo "JUnit results not found. Setting flag to false."
-            echo "::set-output name=use-junit-results::false"
             echo "use_junit_results=false" >> $GITHUB_ENV
           fi
 
       - name: Check Cache Status
+        if: env.use_junit_results == 'true'
         id: cache-status
         run: |
           echo "Cache Hit Status: ${{ env.use_junit_results }}"
@@ -84,6 +83,7 @@ jobs:
           ls -la ./downloaded-test-results
 
       - name: List JUnit Results Directory
+        if: env.use_junit_results == 'true'
         run: ls -R ./downloaded-test-results
 
       - uses: scruplelesswizard/split-tests@v1-alpha.1

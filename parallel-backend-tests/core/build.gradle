@@ -49,6 +49,13 @@ tasks.register('addFileAttributeToJUnitReport') {
     doLast {
         def testReportDir = file("$buildDir/test-results/test")
         def sourceDirPrefix = "parallel-backend-tests/core/src/test/java"
+        def useJUnitResults = System.getenv('use_junit_results')
+
+        if (useJUnitResults == 'true') {
+            println "JUnit results found. Proceeding with file processing."
+        } else {
+            println "JUnit results not found."
+        }
 
         if (testReportDir.exists()) {
             println "Test report directory found: $testReportDir"
