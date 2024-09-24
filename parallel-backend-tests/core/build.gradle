@@ -59,34 +59,47 @@ tasks.register('addFileAttributeToJUnitReport') {
                     // Parse the XML file
                     def xml = new XmlParser().parse(file)
 
-                    // Check if the testsuite exists
-                    println "Root XML element: ${xml.name()}"
-                    println "Found testsuite: ${xml.@name}"
+                    // Check if the root element is 'testsuite'
+                    if (xml.name() == 'testsuite') {
+                        println "Found testsuite: ${xml.@name}"
 
-                    // Create the relative path for the testsuite
-                    def suiteFilePath = "${sourceDirPrefix}/${xml.@name.replace('.', '/')}.java"
-                    xml.@file = suiteFilePath
-                    println "Added 'file' attribute to testsuite: ${xml.@file}"
+                        // Rename the root element 'testsuite' to 'testcases'
+                        xml.replaceNode {
+                            testcases(xml.attributes()) {
+                                // Copy all the inner nodes of 'testsuite' into 'testcases'
+                                xml.children().each { node ->
+                                    mkp.yield(node)
+                                }
+                            }
+                        }
 
-                    // Iterate over testcases within the testsuite
-                    xml.'testcase'.each { test ->
-                        println "Found testcase: ${test.@classname}"
-                        // Calculate the relative path for the testcase
-                        def testClassPath = "${sourceDirPrefix}/${test.@classname.replace('.', '/')}.java"
-                        test.@file = testClassPath
-                        println "Added 'file' attribute to testcase: ${test.@file}"
+                        // Create the relative path for the original testsuite
+                        def suiteFilePath = "${sourceDirPrefix}/${xml.@name.replace('.', '/')}.java"
+                        xml.@file = suiteFilePath
+                        println "Added 'file' attribute to testcases: ${xml.@file}"
+
+                        // Iterate over testcases within the testcases (formerly testsuite)
+                        xml.'testcase'.each { test ->
+                            println "Found testcase: ${test.@classname}"
+                            // Calculate the relative path for the testcase
+                            def testClassPath = "${sourceDirPrefix}/${test.@classname.replace('.', '/')}.java"
+                            test.@file = testClassPath
+                            println "Added 'file' attribute to testcase: ${test.@file}"
+                        }
+
+                        // Serialize and save the modified XML back to the file
+                        def writer = new StringWriter()
+                        new XmlNodePrinter(new PrintWriter(writer)).print(xml)
+
+                        // Overwrite the file with the modified XML
+                        file.withWriter('UTF-8') { out ->
+                            out.write(writer.toString())
+                        }
+
+                        println "File updated successfully: ${file.name}"
+                    } else {
+                        println "Root element is not 'testsuite'. Skipping file: ${file.name}"
                     }
-
-                    // Serialize and save the XML back to the file
-                    def writer = new StringWriter()
-                    new XmlNodePrinter(new PrintWriter(writer)).print(xml)
-
-                    // Overwrite the file with the modified XML
-                    file.withWriter('UTF-8') { out ->
-                        out.write(writer.toString())
-                    }
-
-                    println "File updated successfully: ${file.name}"
                 }
             }
         } else {
