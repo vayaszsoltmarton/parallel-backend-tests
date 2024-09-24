@@ -193,6 +193,7 @@ jobs:
       uses: actions/cache/save@v4
       with:
         key: junit-${{github.base_ref}}-v2
+        save-always: true
         path: |
           ./downloaded-test-results
 
