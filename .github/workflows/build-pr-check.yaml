@@ -83,8 +83,8 @@ jobs:
 #          echo "Cached files:"
 #          ls -la ./downloaded-test-results
 #
-      - name: List JUnit Results Directory
-        run: ls -R ./downloaded-test-results
+#      - name: List JUnit Results Directory
+#        run: ls -R ./downloaded-test-results
 
       - uses: scruplelesswizard/split-tests@v1-alpha.1
         id: split-tests
