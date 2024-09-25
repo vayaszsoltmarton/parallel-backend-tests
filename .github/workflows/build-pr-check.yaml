@@ -76,7 +76,7 @@ jobs:
           key: ${{ env.CACHE_KEY }}
           restore-keys: |
             ${{ env.CACHE_KEY_MAIN_BRANCH }}
-            junit-${{github.head_ref}}
+            junit-${{github.head_ref}}-${{ github.run_id }}
 
       # Conditional logic: Check if JUnit results are available and set an output variable
       - name: check junit cache and set exist_cache_junit_results environment variable
@@ -253,7 +253,7 @@ jobs:
           path: |
             ./downloaded-test-results`
           lookup-only: true
-          key: junit-${{github.head_ref}}
+          key: junit-${{github.head_ref}}-${{ github.run_id }}
 
       # Conditional logic: Check if JUnit results are available and set an output variable
       - name: check junit cache and set exist_cache_junit_results environment variable 3
@@ -273,7 +273,7 @@ jobs:
         if: env.exist_cache_junit_results != 'true' && (success() || failure())
         uses: actions/cache@v4
         with:
-          key: junit-${{github.head_ref}}
+          key: junit-${{github.head_ref}}-${{ github.run_id }}
           path: |
             ./downloaded-test-results
 
