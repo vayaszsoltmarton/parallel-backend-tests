@@ -55,7 +55,7 @@ jobs:
         id: set_cache_key
         run: |
           # Extract the first part of the branch name
-          BRANCH_NAME="${{ github.base_ref }}"
+          BRANCH_NAME="${{ github.ref_name }}"
           
           # Use regex to capture the prefix of the branch (e.g., 'minor' from 'minor_5_9_0')
           if [[ "$BRANCH_NAME" =~ ^([a-zA-Z]+)_[0-9_]+$ ]]; then
@@ -182,7 +182,7 @@ jobs:
         id: set_cache_key
         run: |
           # Extract the first part of the branch name
-          BRANCH_NAME="${{ github.base_ref }}"
+          BRANCH_NAME="${{ github.ref_name }}"
           
           # Use regex to capture the prefix of the branch (e.g., 'minor' from 'minor_5_9_0')
           if [[ "$BRANCH_NAME" =~ ^([a-zA-Z]+)_[0-9_]+$ ]]; then
