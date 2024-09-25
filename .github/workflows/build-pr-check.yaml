@@ -2,8 +2,8 @@ name: Build BE service - PR check
 
 on:
   pull_request:
-    branches: [main, master, major*, minor*]
-    types: [opened, reopened, synchronize, edited]
+    branches: [ main, master, major*, minor* ]
+    types: [ opened, reopened, synchronize, edited ]
 env:
   total-runners: 5
 
@@ -26,7 +26,7 @@ jobs:
           INDEX_LIST=$(seq 0 ${MAX_INDEX})
           INDEX_JSON=$(jq --null-input --compact-output '. |= [inputs]' <<< ${INDEX_LIST})
           echo "::set-output name=json::${INDEX_JSON}"
-          
+
   run-parallel-tests:
     runs-on: ubuntu-latest
     name: "Runner #${{ matrix.runner-index }}: Run test suite in parallel"
@@ -34,7 +34,7 @@ jobs:
       - runner-indexes
     strategy:
       matrix:
-        runner-index: ${{ fromjson(needs.runner-indexes.outputs.json) }}  
+        runner-index: ${{ fromjson(needs.runner-indexes.outputs.json) }}
     steps:
       - name: Checkout project sources
         uses: actions/checkout@v3
@@ -128,46 +128,46 @@ jobs:
 
       - name: Set test_tests environment variable for tests
         run: |
-              # Store original paths in a variable
-              ORIGINAL_PATHS="${{ steps.split-tests.outputs.test-suite }}"
-  
-              if [ -z "$ORIGINAL_PATHS" ]; then
-                echo "No tests found to run."
-                exit 1
-              fi
-                
-              echo "Original file paths $ORIGINAL_PATHS"
-
-              # Convert file paths to the desired format using a simpler method
-              # Convert file paths to the desired format using a simpler method
-              TEST_CLASSES=""
-              for path in $ORIGINAL_PATHS; do
-                # Remove base directory path, replace slashes with dots, remove .java, format with --tests
-                class_name=$(echo "$path" | sed 's|parallel-backend-tests/core/src/test/java/||; s|/|.|g; s|\.java$||')
-                TEST_CLASSES="$TEST_CLASSES --tests '$class_name'"
-              done
-
-              # Ensure TEST_CLASSES is not empty after formatting
-              if [ -z "$TEST_CLASSES" ]; then
-                echo "No test classes found after formatting!"
-                exit 1
-              fi
-
-              echo "Formatted test classes: ${TEST_CLASSES}"
-              echo "Command to execute: ./gradlew test ${TEST_CLASSES} --warning-mode all "
-              echo "image=${TEST_CLASSES}" >> $GITHUB_ENV
-              echo "./gradlew core:test ${{ env.image }} --warning-mode all "
+          # Store original paths in a variable
+          ORIGINAL_PATHS="${{ steps.split-tests.outputs.test-suite }}"
+          
+          if [ -z "$ORIGINAL_PATHS" ]; then
+            echo "No tests found to run."
+            exit 1
+          fi
+          
+          echo "Original file paths $ORIGINAL_PATHS"
+          
+          # Convert file paths to the desired format using a simpler method
+          # Convert file paths to the desired format using a simpler method
+          TEST_CLASSES=""
+          for path in $ORIGINAL_PATHS; do
+            # Remove base directory path, replace slashes with dots, remove .java, format with --tests
+            class_name=$(echo "$path" | sed 's|parallel-backend-tests/core/src/test/java/||; s|/|.|g; s|\.java$||')
+            TEST_CLASSES="$TEST_CLASSES --tests '$class_name'"
+          done
+          
+          # Ensure TEST_CLASSES is not empty after formatting
+          if [ -z "$TEST_CLASSES" ]; then
+            echo "No test classes found after formatting!"
+            exit 1
+          fi
+          
+          echo "Formatted test classes: ${TEST_CLASSES}"
+          echo "Command to execute: ./gradlew test ${TEST_CLASSES} --warning-mode all "
+          echo "image=${TEST_CLASSES}" >> $GITHUB_ENV
+          echo "./gradlew core:test ${{ env.image }} --warning-mode all "
 
       - name: Run tests with computed test_classes variable
         run: |
-              echo "./gradlew core:test ${{ env.image }} --warning-mode all "
-
-              # Run Gradle with fully qualified test class names
-              cd parallel-backend-tests
-              chmod +x ./gradlew
-              #./gradlew core:test --tests 'org.parallel.big.BigExecution3Test' --warning-mode all
-              #./gradlew core:test --tests 'org.parallel.big.BigExecution6Test' --tests 'org.parallel.huge.HugeExecution3Test' --warning-mode all
-              ./gradlew core:test ${{ env.image }} --warning-mode all 
+          echo "./gradlew core:test ${{ env.image }} --warning-mode all "
+          
+          # Run Gradle with fully qualified test class names
+          cd parallel-backend-tests
+          chmod +x ./gradlew
+          #./gradlew core:test --tests 'org.parallel.big.BigExecution3Test' --warning-mode all
+          #./gradlew core:test --tests 'org.parallel.big.BigExecution6Test' --tests 'org.parallel.huge.HugeExecution3Test' --warning-mode all
+          ./gradlew core:test ${{ env.image }} --warning-mode all 
 
       - name: Upload Test Results
         if: success() || failure() # always run even if the previous step fails
@@ -181,99 +181,111 @@ jobs:
     name: Aggregate test results and cache unified report
     needs: run-parallel-tests
     steps:
-    - name: Checkout project sources
-      uses: actions/checkout@v3
+      - name: Checkout project sources
+        uses: actions/checkout@v3
 
-    - name: Download Test Results for All Runners
-      env:
+      - name: Download Test Results for All Runners
+        env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Add this line to set the token
-      run: |
-        for i in $(seq 0 $((${{ env.total-runners }} - 1))); do
-          echo "Downloading test results for runner $i"
-          gh run download --name "test-results-${i}" --dir "./downloaded-test-results-artifact/runner-${i}" || echo "Runner $i had no results"
-        done
+        run: |
+          for i in $(seq 0 $((${{ env.total-runners }} - 1))); do
+            echo "Downloading test results for runner $i"
+            gh run download --name "test-results-${i}" --dir "./downloaded-test-results/runner-${i}" || echo "Runner $i had no results"
+          done
 
-    - name: Set cache key
-      id: set_cache_key
-      run: |
-        # Extract the first part of the branch name
-        BRANCH_NAME="${{ github.base_ref }}"
-        
-        # Use regex to capture the prefix of the branch (e.g., 'minor' from 'minor_5_9_0')
-        if [[ "$BRANCH_NAME" =~ ^([a-zA-Z]+)_[0-9_]+$ ]]; then
-          # If it matches, extract the prefix
-          CACHE_PREFIX="${BASH_REMATCH[1]}"
-        else
-          # Otherwise, use the full branch name (e.g., 'minor', 'major', 'master')
-          CACHE_PREFIX="$BRANCH_NAME"
-        fi
-        
-        # Export the cache key with github.run_id
-        echo "CACHE_KEY=junit-${CACHE_PREFIX}-${{ github.run_id }}" >> $GITHUB_ENV
-        echo "CACHE_KEY_MAIN_BRANCH=junit-${CACHE_PREFIX}" >> $GITHUB_ENV
+      - name: Set cache key
+        id: set_cache_key
+        run: |
+          # Extract the first part of the branch name
+          BRANCH_NAME="${{ github.base_ref }}"
+          
+          # Use regex to capture the prefix of the branch (e.g., 'minor' from 'minor_5_9_0')
+          if [[ "$BRANCH_NAME" =~ ^([a-zA-Z]+)_[0-9_]+$ ]]; then
+            # If it matches, extract the prefix
+            CACHE_PREFIX="${BASH_REMATCH[1]}"
+          else
+            # Otherwise, use the full branch name (e.g., 'minor', 'major', 'master')
+            CACHE_PREFIX="$BRANCH_NAME"
+          fi
+          
+          # Export the cache key with github.run_id
+          echo "CACHE_KEY=junit-${CACHE_PREFIX}-${{ github.run_id }}" >> $GITHUB_ENV
+          echo "CACHE_KEY_MAIN_BRANCH=junit-${CACHE_PREFIX}" >> $GITHUB_ENV
 
-    # Restore cached JUnit test results (if available)
-    - name: Restore JUnit Cache
-      id: cache-junit
-      uses: actions/cache/restore@v4
-      with:
-        path: |
-          ./downloaded-test-results
-        key: ${{ env.CACHE_KEY }}
-        restore-keys: |
-          ${{ env.CACHE_KEY_MAIN_BRANCH }}
-          junit-${{github.head_ref}}
+      - name: Restore exact main branch JUnit Cache
+        id: cache-junit
+        uses: actions/cache/restore@v4
+        with:
+          lookup-only: true
+          key: ${{ env.CACHE_KEY }}
 
-    # Conditional logic: Check if JUnit results are available and set an output variable
-    - name: check junit cache and set exist_cache_junit_results environment variable
-      id: check-junit
-      run: |
-        if [ -d "downloaded-test-results" ] && find downloaded-test-results -type f -name "*.xml" | grep -q .; then
+      # Conditional logic: Check if JUnit results are available and set an output variable
+      - name: check junit cache and set exist_cache_junit_results environment variable 1
+        if: steps.cache-junit.outputs.cache-hit == 'true'
+        id: check-junit
+        run: |
           echo "Cached JUnit results found. Setting flag to true."
           echo "exist_cache_junit_results=true" >> $GITHUB_ENV
-        else
-          echo "Cached JUnit results not found. Setting flag to false."
-          echo "exist_cache_junit_results=false" >> $GITHUB_ENV
-        fi 
 
-    - name: Check Cache Status
-      if: env.exist_cache_junit_results == 'true'
-      id: cache-status
-      run: |
-        echo "Cache Hit Status: ${{ env.exist_cache_junit_results }}"
+      - name: Restore exact main branch JUnit Cache
+        id: cache-junit
+        uses: actions/cache/restore@v4
+        with:
+          lookup-only: true
+          key: ${{ env.CACHE_KEY_MAIN_BRANCH }}
+          restore-keys: |
+            junit-${{github.head_ref}}
 
-    - name: Set is_require_cache_capturing environment variable
-      id: check-source-branch
-      run: |
-        if [[ "${{ env.exist_cache_junit_results }}" != "true" ]]; then
-          echo "Cache not exist requires to create"
-          echo "is_require_cache_capturing=true" >> $GITHUB_ENV
-        else
-          echo "Cache exist, skip creating it"
-          echo "is_require_cache_capturing=false" >> $GITHUB_ENV
-        fi
+      # Conditional logic: Check if JUnit results are available and set an output variable
+      - name: check junit cache and set exist_cache_junit_results environment variable 2
+        if: steps.cache-junit.outputs.cache-hit == 'true'
+        id: check-junit
+        run: |
+          echo "Cached JUnit results found. Setting flag to true."
+          echo "exist_cache_junit_results=true" >> $GITHUB_ENV
 
-    - name: Create cache if not exist main branch
-      if: env.exist_cache_junit_results == 'false' && (success() || failure())
-      uses: actions/cache@v4
-      with:
-        key: junit-${{github.head_ref}}
-        path: |
-          ./downloaded-test-results-artifact
+      - name: Restore exact main branch JUnit Cache
+        id: cache-junit
+        uses: actions/cache/restore@v4
+        with:
+          lookup-only: true
+          key: junit-${{github.head_ref}}
 
-    - name: Upload Test Results
-      if: success() || failure() # always run even if the previous step fails
-      uses: actions/upload-artifact@v4
-      with:
-        name: downloaded-test-results-artifact
-        path: downloaded-test-results-artifact
+      # Conditional logic: Check if JUnit results are available and set an output variable
+      - name: check junit cache and set exist_cache_junit_results environment variable 3
+        if: steps.cache-junit.outputs.cache-hit == 'true'
+        id: check-junit
+        run: |
+          echo "Cached JUnit results found. Setting flag to true."
+          echo "exist_cache_junit_results=true" >> $GITHUB_ENV
 
-    - name: Display Test Results in UI
-      uses: mikepenz/action-junit-report@v4.3.1
-      if: success() || failure() # always run even if the previous step fails
-      with:
-        report_paths: './downloaded-test-results-artifact/**/TEST-*.xml'
-        check_name: 'Parallel backend Tests Result'
-        detailed_summary: true
-        
-              
+      - name: Check Cache Status
+        if: env.exist_cache_junit_results == 'true'
+        id: cache-status
+        run: |
+          echo "Cache Hit Status: ${{ env.exist_cache_junit_results }}"
+
+      - name: Create cache if not exist main branch
+        if: env.exist_cache_junit_results != 'true' && (success() || failure())
+        uses: actions/cache@v4
+        with:
+          key: junit-${{github.head_ref}}
+          path: |
+            ./downloaded-test-results
+
+      - name: Upload Test Results
+        if: success() || failure() # always run even if the previous step fails
+        uses: actions/upload-artifact@v4
+        with:
+          name: downloaded-test-results
+          path: downloaded-test-results
+
+      - name: Display Test Results in UI
+        uses: mikepenz/action-junit-report@v4.3.1
+        if: success() || failure() # always run even if the previous step fails
+        with:
+          report_paths: './downloaded-test-results/**/TEST-*.xml'
+          check_name: 'Parallel backend Tests Result'
+          detailed_summary: true
+
+
