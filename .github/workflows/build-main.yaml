@@ -3,7 +3,11 @@ name: Build BE main branch
 on:
   push:
     branches:
-      - [main, master, major*, minor*]
+      - main
+      - master
+      - major_*
+      - minor_*
+
 env:
   total-runners: 5
 
