@@ -14,6 +14,54 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter")
 }
 
-tasks.test {
+// Register the test task
+tasks.named('test').configure {
     useJUnitPlatform()
+
+    // To allow test filtering
+    filter {
+        includeTestsMatching "*"
+    }
+
+    reports {
+        junitXml {
+            // Set the destination directory for XML reports
+            destination = file("$buildDir/test-results/test")
+        }
+    }
+
+    // Ensure the addFileAttributeToJUnitReport task runs after the test task
+    finalizedBy(tasks.named('addFileAttributeToJUnitReport'))
+}
+
+// Ensure the post-processing task runs after the test task completes
+tasks.named('test').configure {
+    finalizedBy('addFileAttributeToJUnitReport')
+}
+
+// Register the post-processing task to add the 'file' attribute to the JUnit report
+tasks.register('addFileAttributeToJUnitReport') {
+    doLast {
+        def testReportDir = file("$buildDir/test-results/test")
+
+        // Iterate through all generated XML files
+        testReportDir.eachFileRecurse { file ->
+            if (file.name.endsWith('.xml')) {
+                def xml = new XmlSlurper().parse(file)
+
+                // Add 'file' attribute to each testsuite and testcase
+                xml.testsuite.each { suite ->
+                    suite.@file = suite.@name  // Use suite name as the file attribute
+                    suite.testcase.each { test ->
+                        test.@file = suite.@name  // Use suite name or customize as needed
+                    }
+                }
+
+                // Write the modified XML back to the file
+                file.withWriter { writer ->
+                    XmlUtil.serialize(xml, writer)
+                }
+            }
+        }
+    }
 }

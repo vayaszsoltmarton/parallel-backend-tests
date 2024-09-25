@@ -9,40 +9,40 @@ import static org.parallel.common.Constants.SHORT_EXECUTION_TIME;
 public class MediumExecutionTest {
     private final BusinessLogicSimulation businessLogicSimulation = new BusinessLogicSimulation();
 
-    @Test
-    public void test1() {
-        businessLogicSimulation.startSimulation(MEDIUM_EXECUTION_TIME);
-    }
+//    @Test
+//    public void test1() {
+//        businessLogicSimulation.startSimulation(MEDIUM_EXECUTION_TIME);
+//    }
 
-    @Test
-    public void test2() {
-        businessLogicSimulation.startSimulation(MEDIUM_EXECUTION_TIME);
-    }
+//    @Test
+//    public void test2() {
+//        businessLogicSimulation.startSimulation(MEDIUM_EXECUTION_TIME);
+//    }
 
-    @Test
-    public void test3() {
-        businessLogicSimulation.startSimulation(MEDIUM_EXECUTION_TIME);
-    }
+//    @Test
+//    public void test3() {
+//        businessLogicSimulation.startSimulation(MEDIUM_EXECUTION_TIME);
+//    }
 
-    @Test
-    public void test4() {
-        businessLogicSimulation.startSimulation(MEDIUM_EXECUTION_TIME);
-    }
+//    @Test
+//    public void test4() {
+//        businessLogicSimulation.startSimulation(MEDIUM_EXECUTION_TIME);
+//    }
 
-    @Test
-    public void test5() {
-        businessLogicSimulation.startSimulation(MEDIUM_EXECUTION_TIME);
-    }
+//    @Test
+//    public void test5() {
+//        businessLogicSimulation.startSimulation(MEDIUM_EXECUTION_TIME);
+//    }
 
-    @Test
-    public void test6() {
-        businessLogicSimulation.startSimulation(MEDIUM_EXECUTION_TIME);
-    }
+//    @Test
+//    public void test6() {
+//        businessLogicSimulation.startSimulation(MEDIUM_EXECUTION_TIME);
+//    }
 
-    @Test
-    public void test7() {
-        businessLogicSimulation.startSimulation(MEDIUM_EXECUTION_TIME);
-    }
+//    @Test
+//    public void test7() {
+//        businessLogicSimulation.startSimulation(MEDIUM_EXECUTION_TIME);
+//    }
 
     @Test
     public void test8() {

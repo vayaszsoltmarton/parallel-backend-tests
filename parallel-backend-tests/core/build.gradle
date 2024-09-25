@@ -37,17 +37,103 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-logging"
 }
 
-tasks.test {
+test {
+    testLogging {
+        exceptionFormat = 'full'
+    }
+}
+
+import groovy.xml.*
+
+tasks.register('addFileAttributeToJUnitReport') {
+    doLast {
+        def testReportDir = file("$buildDir/test-results/test")
+        def sourceDirPrefix = "parallel-backend-tests/core/src/test/java"
+        def useJUnitResults = System.getenv('use_junit_results')
+
+        if (useJUnitResults == 'true') {
+            println "JUnit results found. Proceeding with file processing."
+        } else {
+            println "JUnit results not found."
+        }
+
+        if (testReportDir.exists()) {
+            println "Test report directory found: $testReportDir"
+            testReportDir.eachFileRecurse { file ->
+                if (file.name.endsWith('.xml')) {
+                    println "Processing file: ${file.name}"
+
+                    // Parse the XML file
+                    def xml = new XmlParser().parse(file)
+
+                    // Check if the root element is 'testsuite'
+                    if (xml.name() == 'testsuite') {
+                        println "Found testsuite: ${xml.@name}"
+
+                        // Create a new root node with name 'testcases'
+                        def newRoot = new Node(null, 'testcases', xml.attributes())
+
+                        // Copy all the children from the old root (testsuite) to the new root (testcases)
+                        xml.children().each { child ->
+                            newRoot.append(child)
+                        }
+
+                        // Create the relative path for the original testsuite
+                        def suiteFilePath = "${sourceDirPrefix}/${xml.@name.replace('.', '/')}.java"
+                        newRoot.@file = suiteFilePath
+                        println "Added 'file' attribute to testcases: ${newRoot.@file}"
+
+                        // Iterate over testcases within the new testcases root node
+                        newRoot.'testcase'.each { test ->
+                            println "Found testcase: ${test.@classname}"
+                            // Calculate the relative path for the testcase
+                            def testClassPath = "${sourceDirPrefix}/${test.@classname.replace('.', '/')}.java"
+                            test.@file = testClassPath
+                            println "Added 'file' attribute to testcase: ${test.@file}"
+                        }
+
+                        // Serialize and save the modified XML back to the file
+                        def writer = new StringWriter()
+                        new XmlNodePrinter(new PrintWriter(writer)).print(newRoot)
+
+                        // Overwrite the file with the modified XML
+                        file.withWriter('UTF-8') { out ->
+                            out.write(writer.toString())
+                        }
+
+                        println "File updated successfully: ${file.name}"
+                    } else {
+                        println "Root element is not 'testsuite'. Skipping file: ${file.name}"
+                    }
+                }
+            }
+        } else {
+            println "Test report directory does not exist: $testReportDir"
+        }
+    }
+}
+
+// Register the test task
+tasks.named('test').configure {
     useJUnitPlatform()
 
     // To allow test filtering
     filter {
         includeTestsMatching "*"
     }
+
+    reports {
+        junitXml {
+            // Set the destination directory for XML reports
+            destination = file("$buildDir/test-results/test")
+        }
+    }
+
+    // Ensure the addFileAttributeToJUnitReport task runs after the test task
+    finalizedBy(tasks.named('addFileAttributeToJUnitReport'))
 }
 
-test {
-    testLogging {
-        exceptionFormat = 'full'
-    }
+//// Ensure the post-processing task runs after the test task completes
+tasks.named('test').configure {
+    finalizedBy('addFileAttributeToJUnitReport')
 }
