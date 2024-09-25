@@ -282,7 +282,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: downloaded-test-results
-          path: downloaded-test-results
+          path: ./downloaded-test-results
 
       - name: Display Test Results in UI
         uses: mikepenz/action-junit-report@v4.3.1
