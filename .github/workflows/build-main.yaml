@@ -195,7 +195,6 @@ jobs:
 
           # Export the cache key with github.run_id
           echo "CACHE_KEY=junit-${CACHE_PREFIX}-${{ github.run_id }}" >> $GITHUB_ENV
-          echo "CACHE_KEY_MAIN_BRANCH=junit-${CACHE_PREFIX}" >> $GITHUB_ENV
 
       - name: Update cache with latest test results (if merging minor to major)
         uses: actions/cache@v4
