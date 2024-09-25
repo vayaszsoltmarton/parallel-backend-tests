@@ -54,9 +54,10 @@ jobs:
         with:
           path: |
             ./downloaded-test-results
-          key: junit-${{github.base_ref}}-
+          key: junit-${{github.base_ref}}-${{ github.run_id }}
           restore-keys: |
             junit-${{github.base_ref}}
+            junit-
 
       # Conditional logic: Check if JUnit results are available and set an output variable
       - name: check junit cache and set exist_cache_junit_results environment variable
