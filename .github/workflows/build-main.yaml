@@ -1,4 +1,4 @@
-name: Build BE service - PR check
+name: Build BE main branch
 
 on:
   push:
