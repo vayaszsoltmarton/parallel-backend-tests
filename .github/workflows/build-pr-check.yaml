@@ -47,6 +47,25 @@ jobs:
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
 
+      - name: Set cache key
+        id: set_cache_key
+        run: |
+          # Extract the first part of the branch name
+          BRANCH_NAME="${{ github.base_ref }}"
+          
+          # Use regex to capture the prefix of the branch (e.g., 'minor' from 'minor_5_9_0')
+          if [[ "$BRANCH_NAME" =~ ^([a-zA-Z]+)_[0-9_]+$ ]]; then
+            # If it matches, extract the prefix
+            CACHE_PREFIX="${BASH_REMATCH[1]}"
+          else
+            # Otherwise, use the full branch name (e.g., 'minor', 'major', 'master')
+            CACHE_PREFIX="$BRANCH_NAME"
+          fi
+
+          # Export the cache key with github.run_id
+          echo "CACHE_KEY=junit-${CACHE_PREFIX}-${{ github.run_id }}" >> $GITHUB_ENV
+          echo "CACHE_KEY_MAIN_BRANCH=junit-${CACHE_PREFIX}" >> $GITHUB_ENV
+
       # Restore cached JUnit test results (if available)
       - name: Restore JUnit Cache
         id: cache-junit
@@ -54,10 +73,10 @@ jobs:
         with:
           path: |
             ./downloaded-test-results
-          key: junit-${{github.base_ref}}-${{ github.run_id }}
+          key: ${{ env.CACHE_KEY }}
           restore-keys: |
-            junit-${{github.base_ref}}
-            junit-
+            ${{ env.CACHE_KEY_MAIN_BRANCH }}
+            junit-${{github.head_ref}}
 
       # Conditional logic: Check if JUnit results are available and set an output variable
       - name: check junit cache and set exist_cache_junit_results environment variable
@@ -173,6 +192,25 @@ jobs:
           echo "Downloading test results for runner $i"
           gh run download --name "test-results-${i}" --dir "./downloaded-test-results/runner-${i}" || echo "Runner $i had no results"
         done
+        -
+    - name: Set cache key
+      id: set_cache_key
+      run: |
+        # Extract the first part of the branch name
+        BRANCH_NAME="${{ github.base_ref }}"
+        
+        # Use regex to capture the prefix of the branch (e.g., 'minor' from 'minor_5_9_0')
+        if [[ "$BRANCH_NAME" =~ ^([a-zA-Z]+)_[0-9_]+$ ]]; then
+          # If it matches, extract the prefix
+          CACHE_PREFIX="${BASH_REMATCH[1]}"
+        else
+          # Otherwise, use the full branch name (e.g., 'minor', 'major', 'master')
+          CACHE_PREFIX="$BRANCH_NAME"
+        fi
+        
+        # Export the cache key with github.run_id
+        echo "CACHE_KEY=junit-${CACHE_PREFIX}-${{ github.run_id }}" >> $GITHUB_ENV
+        echo "CACHE_KEY_MAIN_BRANCH=junit-${CACHE_PREFIX}" >> $GITHUB_ENV
 
     # Restore cached JUnit test results (if available)
     - name: Restore JUnit Cache
@@ -180,16 +218,17 @@ jobs:
       uses: actions/cache/restore@v4
       with:
         path: |
-          ./downloaded-test-results
-        key: junit-${{github.base_ref}}-
+          ./downloaded-cached-test-results
+        key: ${{ env.CACHE_KEY }}
         restore-keys: |
-          junit-${{github.base_ref}}
+          ${{ env.CACHE_KEY_MAIN_BRANCH }}
+          junit-${{github.head_ref}}
 
     # Conditional logic: Check if JUnit results are available and set an output variable
     - name: check junit cache and set exist_cache_junit_results environment variable
       id: check-junit
       run: |
-        if [ -d "downloaded-test-results" ] && find downloaded-test-results -type f -name "*.xml" | grep -q .; then
+        if [ -d "downloaded-cached-test-results" ] && find downloaded-cached-test-results -type f -name "*.xml" | grep -q .; then
           echo "Cached JUnit results found. Setting flag to true."
           echo "exist_cache_junit_results=true" >> $GITHUB_ENV
         else
@@ -215,10 +254,10 @@ jobs:
         fi
 
     - name: Update cache if not exist main branch
-      if: env.CACHE_UPDATE == 'true' && (success() || failure())
+      if: env.exist_cache_junit_results == 'false' && (success() || failure())
       uses: actions/cache@v4
       with:
-        key: junit-${{github.base_ref}}-${{ github.run_id }}
+        key: junit-${{github.head_ref}}
         path: |
           ./downloaded-test-results
 
