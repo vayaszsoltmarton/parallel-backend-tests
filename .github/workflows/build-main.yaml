@@ -1,9 +1,13 @@
-name: Build BE service - PR check
+name: Build BE main branch
 
 on:
-  pull_request:
-    branches: [ main, master, major*, minor* ]
-    types: [ opened, reopened, synchronize, edited ]
+  push:
+    branches:
+      - main
+      - master
+      - major_*
+      - minor_*
+
 env:
   total-runners: 5
 
@@ -76,19 +80,6 @@ jobs:
           key: ${{ env.CACHE_KEY }}
           restore-keys: |
             ${{ env.CACHE_KEY_MAIN_BRANCH }}
-            junit-${{github.head_ref}}
-
-      # Conditional logic: Check if JUnit results are available and set an output variable
-      - name: check junit cache and set exist_cache_junit_results environment variable
-        id: check-junit
-        run: |
-          if [ -d "downloaded-test-results" ] && find downloaded-test-results -type f -name "*.xml" | grep -q .; then
-            echo "Cached JUnit results found. Setting flag to true."
-            echo "exist_cache_junit_results=true" >> $GITHUB_ENV
-          else
-            echo "Cached JUnit results not found. Setting flag to false."
-            echo "exist_cache_junit_results=false" >> $GITHUB_ENV
-          fi
 
       - name: Check Cache Status
         if: env.exist_cache_junit_results == 'true'
@@ -118,13 +109,7 @@ jobs:
       - name: Set is_require_cache_capturing environment variable
         id: check-source-branch
         run: |
-          if [[ "${{ env.exist_cache_junit_results }}" != "true" ]]; then
-            echo "Cache not exist requires to create"
-            echo "is_require_cache_capturing=true" >> $GITHUB_ENV
-          else
-            echo "Cache exist, skip creating it"
-            echo "is_require_cache_capturing=false" >> $GITHUB_ENV
-          fi
+          echo "is_require_cache_capturing=true" >> $GITHUB_ENV
 
       - name: Set test_tests environment variable for tests
         run: |
@@ -207,73 +192,14 @@ jobs:
             # Otherwise, use the full branch name (e.g., 'minor', 'major', 'master')
             CACHE_PREFIX="$BRANCH_NAME"
           fi
-          
+
           # Export the cache key with github.run_id
           echo "CACHE_KEY=junit-${CACHE_PREFIX}-${{ github.run_id }}" >> $GITHUB_ENV
-          echo "CACHE_KEY_MAIN_BRANCH=junit-${CACHE_PREFIX}" >> $GITHUB_ENV
 
-      - name: Restore exact main branch JUnit CACHE_KEY
-        id: cache-junit-restore-1
-        uses: actions/cache/restore@v4
-        with:
-          path: |
-            ./downloaded-test-results
-          lookup-only: true
-          key: ${{ env.CACHE_KEY }}
-
-      # Conditional logic: Check if JUnit results are available and set an output variable
-      - name: check junit cache and set exist_cache_junit_results environment variable 1
-        if: steps.cache-junit-1.outputs.cache-hit == 'true'
-        id: check-junit-1
-        run: |
-          echo "Cached JUnit results found. Setting flag to true."
-          echo "exist_cache_junit_results=true" >> $GITHUB_ENV
-
-      - name: Restore exact main branch JUnit Cache CACHE_KEY_MAIN_BRANCH
-        id: cache-junit-restore-2
-        uses: actions/cache/restore@v4
-        with:
-          path: |
-            ./downloaded-test-results
-          lookup-only: true
-          key: ${{ env.CACHE_KEY_MAIN_BRANCH }}
-
-      # Conditional logic: Check if JUnit results are available and set an output variable
-      - name: check junit cache and set exist_cache_junit_results environment variable 2
-        if: steps.cache-junit-2.outputs.cache-hit == 'true'
-        id: check-junit-2
-        run: |
-          echo "Cached JUnit results found. Setting flag to true."
-          echo "exist_cache_junit_results=true" >> $GITHUB_ENV
-
-      - name: Restore exact main branch JUnit Cache Current Branch
-        id: cache-junit-restore-3
-        uses: actions/cache/restore@v4
-        with:
-          path: |
-            ./downloaded-test-results`
-          lookup-only: true
-          key: junit-${{github.head_ref}}
-
-      # Conditional logic: Check if JUnit results are available and set an output variable
-      - name: check junit cache and set exist_cache_junit_results environment variable 3
-        if: steps.cache-junit-3.outputs.cache-hit == 'true'
-        id: check-junit-3
-        run: |
-          echo "Cached JUnit results found. Setting flag to true."
-          echo "exist_cache_junit_results=true" >> $GITHUB_ENV
-
-      - name: Check Cache Status
-        if: env.exist_cache_junit_results == 'true'
-        id: cache-status
-        run: |
-          echo "Cache Hit Status: ${{ env.exist_cache_junit_results }}"
-
-      - name: Create cache if not exist main branch
-        if: env.exist_cache_junit_results != 'true' && (success() || failure())
+      - name: Update cache with latest test results (if merging minor to major)
         uses: actions/cache@v4
         with:
-          key: junit-${{github.head_ref}}-${{ github.run_id }}
+          key: ${{ env.CACHE_KEY }}
           path: |
             ./downloaded-test-results
 
@@ -282,7 +208,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: downloaded-test-results
-          path: ./downloaded-test-results
+          path: downloaded-test-results
 
       - name: Display Test Results in UI
         uses: mikepenz/action-junit-report@v4.3.1
@@ -290,6 +216,7 @@ jobs:
         with:
           report_paths: './downloaded-test-results/**/TEST-*.xml'
           check_name: 'Parallel backend Tests Result'
+          include_passed: true
           detailed_summary: true
 
 
