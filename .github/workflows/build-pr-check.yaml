@@ -218,7 +218,7 @@ jobs:
       uses: actions/cache/restore@v4
       with:
         path: |
-          ./downloaded-cached-test-results
+          ./downloaded-test-results
         key: ${{ env.CACHE_KEY }}
         restore-keys: |
           ${{ env.CACHE_KEY_MAIN_BRANCH }}
@@ -228,7 +228,7 @@ jobs:
     - name: check junit cache and set exist_cache_junit_results environment variable
       id: check-junit
       run: |
-        if [ -d "downloaded-cached-test-results" ] && find downloaded-cached-test-results -type f -name "*.xml" | grep -q .; then
+        if [ -d "downloaded-test-results" ] && find downloaded-test-results -type f -name "*.xml" | grep -q .; then
           echo "Cached JUnit results found. Setting flag to true."
           echo "exist_cache_junit_results=true" >> $GITHUB_ENV
         else
@@ -253,7 +253,7 @@ jobs:
           echo "is_require_cache_capturing=false" >> $GITHUB_ENV
         fi
 
-    - name: Update cache if not exist main branch
+    - name: Create cache if not exist main branch
       if: env.exist_cache_junit_results == 'false' && (success() || failure())
       uses: actions/cache@v4
       with:
