@@ -99,11 +99,11 @@ jobs:
       - name: Set is_require_cache_capturing environment variable
         id: check-source-branch
         run: |
-          if [[ "${GITHUB_HEAD_REF,,}" == merge* ]] || [[ "${{ env.exist_cache_junit_results }}" != "true" ]]; then
-            echo "The source branch is a merge one. Cache capture/update requires"
+          if [[ "${{ env.exist_cache_junit_results }}" != "true" ]]; then
+            echo "Cache not exist requires to create"
             echo "is_require_cache_capturing=true" >> $GITHUB_ENV
           else
-            echo "The source branch is not a merge one. Cache update not require"
+            echo "Cache exist, skip creating it"
             echo "is_require_cache_capturing=false" >> $GITHUB_ENV
           fi
 
@@ -206,15 +206,15 @@ jobs:
     - name: Set is_require_cache_capturing environment variable
       id: check-source-branch
       run: |
-        if [[ "${GITHUB_HEAD_REF,,}" == merge* ]] || [[ "${{ env.exist_cache_junit_results }}" != "true" ]]; then
-          echo "The source branch is a merge one. Cache capture/update requires"
-          echo "CACHE_UPDATE=true" >> $GITHUB_ENV
+        if [[ "${{ env.exist_cache_junit_results }}" != "true" ]]; then
+          echo "Cache not exist requires to create"
+          echo "is_require_cache_capturing=true" >> $GITHUB_ENV
         else
-          echo "The source branch is not a merge one. Cache update not require"
-          echo "CACHE_UPDATE=false" >> $GITHUB_ENV
+          echo "Cache exist, skip creating it"
+          echo "is_require_cache_capturing=false" >> $GITHUB_ENV
         fi
 
-    - name: Update cache with latest test results (if merging minor to major)
+    - name: Update cache if not exist main branch
       if: env.CACHE_UPDATE == 'true' && (success() || failure())
       uses: actions/cache@v4
       with:
