@@ -213,7 +213,7 @@ jobs:
           echo "CACHE_KEY_MAIN_BRANCH=junit-${CACHE_PREFIX}" >> $GITHUB_ENV
 
       - name: Restore exact main branch JUnit CACHE_KEY
-        id: cache-junit
+        id: cache-junit-restore-1
         uses: actions/cache/restore@v4
         with:
           lookup-only: true
@@ -221,14 +221,14 @@ jobs:
 
       # Conditional logic: Check if JUnit results are available and set an output variable
       - name: check junit cache and set exist_cache_junit_results environment variable 1
-        if: steps.cache-junit.outputs.cache-hit == 'true'
-        id: check-junit
+        if: steps.cache-junit-1.outputs.cache-hit == 'true'
+        id: check-junit-1
         run: |
           echo "Cached JUnit results found. Setting flag to true."
           echo "exist_cache_junit_results=true" >> $GITHUB_ENV
 
       - name: Restore exact main branch JUnit Cache CACHE_KEY_MAIN_BRANCH
-        id: cache-junit
+        id: cache-junit-restore-2
         uses: actions/cache/restore@v4
         with:
           lookup-only: true
@@ -238,14 +238,14 @@ jobs:
 
       # Conditional logic: Check if JUnit results are available and set an output variable
       - name: check junit cache and set exist_cache_junit_results environment variable 2
-        if: steps.cache-junit.outputs.cache-hit == 'true'
-        id: check-junit
+        if: steps.cache-junit-2.outputs.cache-hit == 'true'
+        id: check-junit-2
         run: |
           echo "Cached JUnit results found. Setting flag to true."
           echo "exist_cache_junit_results=true" >> $GITHUB_ENV
 
       - name: Restore exact main branch JUnit Cache Current Branch
-        id: cache-junit
+        id: cache-junit-restore-3
         uses: actions/cache/restore@v4
         with:
           lookup-only: true
@@ -253,8 +253,8 @@ jobs:
 
       # Conditional logic: Check if JUnit results are available and set an output variable
       - name: check junit cache and set exist_cache_junit_results environment variable 3
-        if: steps.cache-junit.outputs.cache-hit == 'true'
-        id: check-junit
+        if: steps.cache-junit-3.outputs.cache-hit == 'true'
+        id: check-junit-3
         run: |
           echo "Cached JUnit results found. Setting flag to true."
           echo "exist_cache_junit_results=true" >> $GITHUB_ENV
