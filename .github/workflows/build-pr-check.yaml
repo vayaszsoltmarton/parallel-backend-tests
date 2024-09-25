@@ -59,31 +59,31 @@ jobs:
             junit-${{github.base_ref}}
 
       # Conditional logic: Check if JUnit results are available and set an output variable
-      - name: Check if JUnit Results Exist
+      - name: check junit cache and set exist_cache_junit_results environment variable
         id: check-junit
         run: |
           if [ -d "downloaded-test-results" ] && find downloaded-test-results -type f -name "*.xml" | grep -q .; then
-            echo "JUnit results found. Setting flag to true."
-            echo "use_junit_results=true" >> $GITHUB_ENV
+            echo "Cached JUnit results found. Setting flag to true."
+            echo "exist_cache_junit_results=true" >> $GITHUB_ENV
           else
-            echo "JUnit results not found. Setting flag to false."
-            echo "use_junit_results=false" >> $GITHUB_ENV
+            echo "Cached JUnit results not found. Setting flag to false."
+            echo "exist_cache_junit_results=false" >> $GITHUB_ENV
           fi
 
       - name: Check Cache Status
-        if: env.use_junit_results == 'true'
+        if: env.exist_cache_junit_results == 'true'
         id: cache-status
         run: |
-          echo "Cache Hit Status: ${{ env.use_junit_results }}"
+          echo "Cache Hit Status: ${{ env.exist_cache_junit_results }}"
 
       - name: List Cached Files
-        if: env.use_junit_results == 'true'
+        if: env.exist_cache_junit_results == 'true'
         run: |
           echo "Cached files:"
           ls -la ./downloaded-test-results
 
       - name: List JUnit Results Directory
-        if: env.use_junit_results == 'true'
+        if: env.exist_cache_junit_results == 'true'
         run: ls -R ./downloaded-test-results
 
       - uses: scruplelesswizard/split-tests@v1-alpha.1
@@ -93,9 +93,20 @@ jobs:
           glob: parallel-backend-tests/core/**/*Test.java
           split-total: ${{ env.total-runners }}
           split-index: ${{ matrix.runner-index }}
-          junit-path: ${{ env.use_junit_results == 'true' && 'downloaded-test-results/**/*.xml' || '' }}
+          junit-path: ${{ env.exist_cache_junit_results == 'true' && 'downloaded-test-results/**/*.xml' || '' }}
 
-      - name: Set image variable for tests
+      - name: Set is_require_cache_capturing environment variable
+        id: check-source-branch
+        run: |
+          if [[ "${GITHUB_HEAD_REF,,}" == merge* ]] || [[ "${{ env.exist_cache_junit_results }}" != "true" ]]; then
+            echo "The source branch is a merge one. Cache capture/update requires"
+            echo "is_require_cache_capturing=true" >> $GITHUB_ENV
+          else
+            echo "The source branch is not a merge one. Cache update not require"
+            echo "is_require_cache_capturing=false" >> $GITHUB_ENV
+          fi
+
+      - name: Set test_tests environment variable for tests
         run: |
               # Store original paths in a variable
               ORIGINAL_PATHS="${{ steps.split-tests.outputs.test-suite }}"
@@ -126,7 +137,8 @@ jobs:
               echo "Command to execute: ./gradlew test ${TEST_CLASSES} --warning-mode all "
               echo "image=${TEST_CLASSES}" >> $GITHUB_ENV
               echo "./gradlew core:test ${{ env.image }} --warning-mode all "
-      - name: Run tests with image variable
+
+      - name: Run tests with computed test_classes variable
         run: |
               echo "./gradlew core:test ${{ env.image }} --warning-mode all "
 
@@ -159,34 +171,47 @@ jobs:
         for i in $(seq 0 $((${{ env.total-runners }} - 1))); do
           echo "Downloading test results for runner $i"
           gh run download --name "test-results-${i}" --dir "./downloaded-test-results/runner-${i}" || echo "Runner $i had no results"
-        done    
+        done
 
-    # Determine if we should update the cache
-    - name: Determine Cache Update
-      id: cache-update
-      if: success() || failure() # always run even if the previous step fails
+    # Restore cached JUnit test results (if available)
+    - name: Restore JUnit Cache
+      id: cache-junit
+      uses: actions/cache/restore@v4
+      with:
+        path: |
+          ./downloaded-test-results
+        key: junit-${{github.base_ref}}-
+        restore-keys: |
+          junit-${{github.base_ref}}
+
+    # Conditional logic: Check if JUnit results are available and set an output variable
+    - name: check junit cache and set exist_cache_junit_results environment variable
+      id: check-junit
       run: |
-        if [ "${GITHUB_EVENT_NAME}" == "pull_request" ]; then
-          echo "Updating cache because it's a PR."
-          echo "CACHE_UPDATE=true" >> $GITHUB_ENV
-        elif [ "${GITHUB_REF#refs/heads/}" == "main" ] || [ "${GITHUB_REF#refs/heads/}" == "show-junit-report" ]; then
-          echo "Updating cache because it's a branch match."
+        if [ -d "downloaded-test-results" ] && find downloaded-test-results -type f -name "*.xml" | grep -q .; then
+          echo "Cached JUnit results found. Setting flag to true."
+          echo "exist_cache_junit_results=true" >> $GITHUB_ENV
+        else
+          echo "Cached JUnit results not found. Setting flag to false."
+          echo "exist_cache_junit_results=false" >> $GITHUB_ENV
+        fi 
+
+    - name: Check Cache Status
+      if: env.exist_cache_junit_results == 'true'
+      id: cache-status
+      run: |
+        echo "Cache Hit Status: ${{ env.exist_cache_junit_results }}"
+
+    - name: Set is_require_cache_capturing environment variable
+      id: check-source-branch
+      run: |
+        if [[ "${GITHUB_HEAD_REF,,}" == merge* ]] || [[ "${{ env.exist_cache_junit_results }}" != "true" ]]; then
+          echo "The source branch is a merge one. Cache capture/update requires"
           echo "CACHE_UPDATE=true" >> $GITHUB_ENV
         else
+          echo "The source branch is not a merge one. Cache update not require"
           echo "CACHE_UPDATE=false" >> $GITHUB_ENV
-        fi    
-
-#    - name: Install Python dependencies
-#      run: |
-#        python -m venv venv
-#        source venv/bin/activate
-#        pip install junitparser
-#
-#    - name: Merge JUnit Test Reports
-#      run: |
-#        python -m venv venv
-#        source venv/bin/activate
-#        python scripts/merge_junit_reports.py
+        fi
 
     - name: Update cache with latest test results (if merging minor to major)
       if: env.CACHE_UPDATE == 'true' && (success() || failure())
