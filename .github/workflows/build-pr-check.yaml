@@ -212,7 +212,7 @@ jobs:
           echo "CACHE_KEY=junit-${CACHE_PREFIX}-${{ github.run_id }}" >> $GITHUB_ENV
           echo "CACHE_KEY_MAIN_BRANCH=junit-${CACHE_PREFIX}" >> $GITHUB_ENV
 
-      - name: Restore exact main branch JUnit Cache
+      - name: Restore exact main branch JUnit CACHE_KEY
         id: cache-junit
         uses: actions/cache/restore@v4
         with:
@@ -227,7 +227,7 @@ jobs:
           echo "Cached JUnit results found. Setting flag to true."
           echo "exist_cache_junit_results=true" >> $GITHUB_ENV
 
-      - name: Restore exact main branch JUnit Cache
+      - name: Restore exact main branch JUnit Cache CACHE_KEY_MAIN_BRANCH
         id: cache-junit
         uses: actions/cache/restore@v4
         with:
@@ -244,7 +244,7 @@ jobs:
           echo "Cached JUnit results found. Setting flag to true."
           echo "exist_cache_junit_results=true" >> $GITHUB_ENV
 
-      - name: Restore exact main branch JUnit Cache
+      - name: Restore exact main branch JUnit Cache Current Branch
         id: cache-junit
         uses: actions/cache/restore@v4
         with:
