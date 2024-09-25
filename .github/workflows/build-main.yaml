@@ -216,6 +216,7 @@ jobs:
         with:
           report_paths: './downloaded-test-results/**/TEST-*.xml'
           check_name: 'Parallel backend Tests Result'
+          include_passed: true
           detailed_summary: true
 
 
