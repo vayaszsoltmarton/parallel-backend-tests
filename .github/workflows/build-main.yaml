@@ -177,6 +177,7 @@ jobs:
             echo "Downloading test results for runner $i"
             gh run download --name "test-results-${i}" --dir "./downloaded-test-results/runner-${i}" || echo "Runner $i had no results"
           done
+          
 
       - name: Set cache key
         id: set_cache_key
