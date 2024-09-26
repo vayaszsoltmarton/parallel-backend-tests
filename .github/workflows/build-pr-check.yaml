@@ -165,8 +165,6 @@ jobs:
           # Run Gradle with fully qualified test class names
           cd parallel-backend-tests
           chmod +x ./gradlew
-          #./gradlew core:test --tests 'org.parallel.big.BigExecution3Test' --warning-mode all
-          #./gradlew core:test --tests 'org.parallel.big.BigExecution6Test' --tests 'org.parallel.huge.HugeExecution3Test' --warning-mode all
           ./gradlew core:test ${{ env.image }} --warning-mode all 
 
       - name: Upload Test Results
