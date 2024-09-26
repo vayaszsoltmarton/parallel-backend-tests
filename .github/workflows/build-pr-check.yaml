@@ -223,7 +223,7 @@ jobs:
 
       # Conditional logic: Check if JUnit results are available and set an output variable
       - name: check junit cache and set exist_cache_junit_results environment variable 1
-        if: steps.cache-junit-1.outputs.cache-hit == 'true'
+        if: steps.cache-junit-restore-1.outputs.cache-hit == 'true'
         id: check-junit-1
         run: |
           echo "Cached JUnit results found. Setting flag to true."
@@ -240,7 +240,7 @@ jobs:
 
       # Conditional logic: Check if JUnit results are available and set an output variable
       - name: check junit cache and set exist_cache_junit_results environment variable 2
-        if: steps.cache-junit-2.outputs.cache-hit == 'true'
+        if: steps.cache-junit-restore-2.outputs.cache-hit == 'true'
         id: check-junit-2
         run: |
           echo "Cached JUnit results found. Setting flag to true."
@@ -257,7 +257,7 @@ jobs:
 
       # Conditional logic: Check if JUnit results are available and set an output variable
       - name: check junit cache and set exist_cache_junit_results environment variable 3
-        if: steps.cache-junit-3.outputs.cache-hit == 'true'
+        if: steps.cache-junit-restore-3.outputs.cache-hit == 'true'
         id: check-junit-3
         run: |
           echo "Cached JUnit results found. Setting flag to true."
