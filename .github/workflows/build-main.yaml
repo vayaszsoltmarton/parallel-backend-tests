@@ -230,4 +230,3 @@ jobs:
           check_name: 'Parallel backend Tests Result'
           include_passed: true
           detailed_summary: true
-
