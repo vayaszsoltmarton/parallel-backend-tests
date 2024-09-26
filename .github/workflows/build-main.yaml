@@ -81,6 +81,18 @@ jobs:
           restore-keys: |
             ${{ env.CACHE_KEY_MAIN_BRANCH }}
 
+      # Conditional logic: Check if JUnit results are available and set an output variable
+      - name: check junit cache and set exist_cache_junit_results environment variable
+        id: check-junit
+        run: |
+          if [ -d "downloaded-test-results" ] && find downloaded-test-results -type f -name "*.xml" | grep -q .; then
+            echo "Cached JUnit results found. Setting flag to true."
+            echo "exist_cache_junit_results=true" >> $GITHUB_ENV
+          else
+            echo "Cached JUnit results not found. Setting flag to false."
+            echo "exist_cache_junit_results=false" >> $GITHUB_ENV
+          fi
+
       - name: Check Cache Status
         if: env.exist_cache_junit_results == 'true'
         id: cache-status
@@ -177,7 +189,6 @@ jobs:
             echo "Downloading test results for runner $i"
             gh run download --name "test-results-${i}" --dir "./downloaded-test-results/runner-${i}" || echo "Runner $i had no results"
           done
-          
 
       - name: Set cache key
         id: set_cache_key
