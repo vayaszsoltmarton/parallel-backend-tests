@@ -52,12 +52,8 @@ tasks.register('addFileAttributeToJUnitReport') {
         def isRequireCacheCapturing = System.getenv('is_require_cache_capturing')
 
         if (isRequireCacheCapturing == 'true') {
-            println "JUnit results found. Proceeding with file processing."
-        } else {
-            println "JUnit results not found."
-        }
+            println "JUnit results not found. Proceeding with file processing."
 
-        if (testReportDir.exists()) {
             println "Test report directory found: $testReportDir"
             testReportDir.eachFileRecurse { file ->
                 if (file.name.endsWith('.xml')) {
@@ -108,7 +104,7 @@ tasks.register('addFileAttributeToJUnitReport') {
                 }
             }
         } else {
-            println "Test report directory does not exist: $testReportDir"
+            println "JUnit results found. Proceeding with file processing."
         }
     }
 }
